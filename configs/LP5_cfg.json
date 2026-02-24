@@ -1,0 +1,15 @@
+{
+    "Description": "LPDDR5-6400 Timing Configuration",
+    "ClockFrequencyMHz": 3200,
+    "BurstLength": 32,
+    "tRP": 60,
+    "tRCD": 60,
+    "tCL": 60,
+    "tCWL": 56,
+    "tRAS": 140,
+    "tRC": 200,
+    "tWR": 60,
+    "tCCD": 16,
+    "tRRD": 20,
+    "tFAW": 80
+}
