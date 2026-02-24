@@ -113,12 +113,14 @@ def main():
 
     bw_gbs = (stats['total_bytes'] / 1e9) / total_time_sec if total_time_sec > 0 else 0
     utilization = (stats['bus_busy_cycles'] / total_cycles) * 100
+    avg_queue_depth = stats['cumulative_queue_depth'] / stats['queue_depth_samples'] if stats['queue_depth_samples'] > 0 else 0
 
     print("\nSimulation Results:")
     print(f"Total Cycles (總週期): {total_cycles}")
     print(f"Total Bytes (總位元組): {stats['total_bytes']}")
     print(f"Bandwidth (頻寬): {bw_gbs:.2f} GB/s")
     print(f"Utilization (利用率): {utilization:.2f} %")
+    print(f"Average Queue Depth (平均隊列深度): {avg_queue_depth:.2f}")
     print("-" * 30)
     print(f"Page Hits (Page 命中): {stats['page_hits']}")
     print(f"Page Misses (Page 未命中): {stats['page_misses']}")

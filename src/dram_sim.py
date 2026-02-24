@@ -95,7 +95,9 @@ class DRAMController:
             'page_misses': 0,
             'page_conflicts': 0,
             'bus_busy_cycles': 0,
-            'total_bytes': 0
+            'total_bytes': 0,
+            'cumulative_queue_depth': 0,
+            'queue_depth_samples': 0
         }
 
         self.burst_cycles = config['BurstLength'] // 2
@@ -241,6 +243,11 @@ class DRAMController:
         Advances the simulation by one step (or more if skipping).
         推進模擬一步 (若使用時間跳躍則可能更多)。
         """
+        # Track queue depth statistics
+        # 追蹤隊列深度統計
+        self.stats['cumulative_queue_depth'] += len(self.queue)
+        self.stats['queue_depth_samples'] += 1
+
         if self.current_time < self.cmd_bus_free_time:
             self.current_time = self.cmd_bus_free_time
             # Don't return, check if we can do something now?
