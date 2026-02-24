@@ -1,0 +1,15 @@
+{
+    "Description": "LPDDR4-3200 Timing Configuration",
+    "ClockFrequencyMHz": 1600,
+    "BurstLength": 16,
+    "tRP": 29,
+    "tRCD": 29,
+    "tCL": 28,
+    "tCWL": 26,
+    "tRAS": 67,
+    "tRC": 96,
+    "tWR": 29,
+    "tCCD": 8,
+    "tRRD": 10,
+    "tFAW": 40
+}
