@@ -58,4 +58,4 @@ if __name__ == "__main__":
                 # e.g., seq_read_128B.trace
                 rw_name = "read" if rw == 'R' else "write"
                 filename = f"traces/{mode}_{rw_name}_{size}B.trace"
-                generate_trace(mode, rw, size, 100, filename)
+                generate_trace(mode, rw, size, 550, filename)
