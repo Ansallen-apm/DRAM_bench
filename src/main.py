@@ -31,22 +31,31 @@ class TraceReader:
         if not parts:
             return self.__next__()
 
-        # Format: [R/W]x [Address] [Size_Pow2] [Burst]
-        # 格式：[R/W]x [Address] [Size_Pow2] [Burst]
+        # Format: [R/W]x [Address] [Bus_Width_Log2] [Burst_Length_Code]
+        # 格式：[R/W]x [Address] [Bus_Width_Log2] [Burst_Length_Code]
+        # Data Size = (2^Bus_Width_Log2) * (Burst_Length_Code + 1)
+
         type_str = parts[0]
         addr_str = parts[1]
-        size_pow2 = int(parts[2])
-        burst_code = parts[3]
+        bus_width_log2 = int(parts[2])
+        burst_len_code = int(parts[3])
 
         is_write = 'W' in type_str
         address = int(addr_str, 16)
-        burst_count = int(burst_code, 16) + 1
+
+        # Calculate Request Size
+        # 計算請求大小
+        beats = burst_len_code + 1
+        bytes_per_beat = 2**bus_width_log2
+        size = bytes_per_beat * beats
+
+        # We pass 'size' to controller. 'burst_count' is no longer direct input for DRAM duration.
 
         return {
             'is_write': is_write,
             'address': address,
-            'size': 2**size_pow2,
-            'burst_count': burst_count
+            'size': size,
+            'beats': beats # Optional, for debug
         }
 
 def main():

@@ -4,7 +4,6 @@ import os
 def generate_trace(mode, rw_type, size_bytes, num_transactions, filename):
     """
     Generates a memory trace file.
-
     Args:
         mode (str): 'seq' for sequential, 'rand' for random.
         rw_type (str): 'R' for Read, 'W' for Write.
@@ -13,32 +12,34 @@ def generate_trace(mode, rw_type, size_bytes, num_transactions, filename):
         filename (str): Output filename.
     """
 
-    # Calculate burst count assuming BL16 (LPDDR4 default) and 16-bit channel (2 bytes/beat).
-    # One burst = 16 beats * 2 bytes = 32 bytes.
-    # Burst Code 00 = 1 burst (32B), 01 = 2 bursts (64B), etc.
-    # Formula: burst_code = (size_bytes // 32) - 1
-    # Check alignment:
-    burst_count = max(1, size_bytes // 32)
-    burst_code_val = burst_count - 1
-    burst_code_hex = f"{burst_code_val:02X}"
+    # New Format:
+    # Col 3: Bus_Width_Log2. Fixed to 6 (64 Bytes).
+    # Col 4: Burst_Length_Code. Size = (2^6) * (Code + 1).
+    # Code = (Size / 64) - 1.
 
-    size_pow2 = int(size_bytes).bit_length() - 1 # 128 -> 7, 256 -> 8, 512 -> 9
+    bus_width_log2 = 6
+    bytes_per_beat = 64
+
+    # Calculate beats
+    beats = max(1, size_bytes // bytes_per_beat)
+    burst_code_val = beats - 1
+    burst_code_hex = f"{burst_code_val:02X}"
 
     with open(filename, 'w') as f:
         current_addr = 0x10000000 # Base address
-        stride = size_bytes # Stride for sequential
+        stride = size_bytes
 
         for i in range(num_transactions):
             if mode == 'seq':
                 addr = current_addr + (i * stride)
-            else: # rand
+            else:
                 # Random 36-bit address aligned to 64 bytes
                 addr = random.randint(0, (2**36) // 64) * 64
 
             rw_str = f"A{rw_type}x"
             addr_str = f"{addr:016X}"
 
-            line = f"{rw_str} {addr_str} {size_pow2} {burst_code_hex}\n"
+            line = f"{rw_str} {addr_str} {bus_width_log2} {burst_code_hex}\n"
             f.write(line)
 
     print(f"Generated {filename}")

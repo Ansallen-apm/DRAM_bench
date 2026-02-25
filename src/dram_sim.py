@@ -44,8 +44,10 @@ class BankState:
         Calculates the earliest time a PRE command can be issued.
         計算 PRE 指令最早可發出的時間。
         """
-        bl_cycles = self.config['BurstLength'] // 2
-        wr_rec = self.last_write + self.tCWL + bl_cycles + self.tWR
+        # Calculate burst cycles based on Prefetch (Burst Length)
+        # 根據 Prefetch 計算 Burst Cycles
+        burst_cycles = self.config.get('Prefetch', 16) // 2
+        wr_rec = self.last_write + self.tCWL + burst_cycles + self.tWR
         rd_rec = self.last_read + self.tRTP
         return max(self.last_act + self.tRAS, wr_rec, rd_rec)
 
@@ -100,7 +102,12 @@ class DRAMController:
             'queue_depth_samples': 0
         }
 
-        self.burst_cycles = config['BurstLength'] // 2
+        # DRAM Specs
+        self.prefetch = config.get('Prefetch', 16) # Default 16n
+        self.bit_width = config.get('BitWidth', 16) # Default 16-bit
+        # Bytes per burst = Prefetch * (BitWidth / 8)
+        self.bytes_per_burst = (self.prefetch * self.bit_width) // 8
+        self.burst_cycles = self.prefetch // 2 # DDR (2 transfers per cycle)
 
     def get_bank(self, req):
         """
@@ -136,7 +143,11 @@ class DRAMController:
                     ready_time = bank.get_next_read_time()
                     latency = self.config['tCL']
 
-                duration = req['burst_count'] * self.burst_cycles
+                # Calculate required DRAM bursts for the request size
+                # 計算請求大小所需的 DRAM Burst 數量
+                num_bursts = (req['size'] + self.bytes_per_burst - 1) // self.bytes_per_burst
+                duration = num_bursts * self.burst_cycles
+
                 min_issue_time = max(ready_time, self.data_bus_free_time - latency)
 
                 return (min_issue_time <= self.current_time), cmd_type, min_issue_time
@@ -229,7 +240,11 @@ class DRAMController:
                 bank.last_read = self.current_time
                 latency = self.config['tCL']
 
-            duration = req['burst_count'] * self.burst_cycles
+            # Calculate required DRAM bursts for the request size
+            # 計算請求大小所需的 DRAM Burst 數量
+            num_bursts = (req['size'] + self.bytes_per_burst - 1) // self.bytes_per_burst
+            duration = num_bursts * self.burst_cycles
+
             data_start = self.current_time + latency
             self.data_bus_free_time = data_start + duration
 
