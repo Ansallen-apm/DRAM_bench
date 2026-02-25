@@ -22,14 +22,43 @@ Run the simulator using `src/main.py`:
 <!-- 使用 src/main.py 執行模擬器： -->
 
 ```bash
-python3 src/main.py --config <config_file> --mapping <mapping_file> --trace <trace_file> --policy <FIFO|PageHitFirst>
+python3 src/main.py --config <config_file> --mapping <mapping_file> --trace <trace_file> --policy <FIFO|PageHitFirst> --queue_depth <1-1024>
 ```
+
+### Arguments (參數)
+- `--config`: Path to timing config JSON (e.g., `configs/LP4_cfg.json`).
+- `--mapping`: Path to address mapping JSON (e.g., `configs/mapping.json`).
+- `--trace`: Path to trace file (e.g., `traces/sample.trace`).
+- `--policy`: Scheduling policy (`FIFO` or `PageHitFirst`).
+- `--queue_depth`: Command Queue Depth (Integer, Range: 1-1024). Default is 16.
+  <!-- 指令隊列深度 (整數，範圍：1-1024)。預設為 16。 -->
 
 ### Example (範例)
 
 ```bash
-python3 src/main.py --config configs/LP4_cfg.json --mapping configs/mapping.json --trace traces/sample.trace --policy FIFO
+python3 src/main.py --config configs/LP4_cfg.json --mapping configs/mapping.json --trace traces/sample.trace --policy FIFO --queue_depth 32
 ```
+
+## Trace Files (Trace 檔案)
+
+The repository includes several generated trace files for testing different access patterns and data sizes (100 transactions each):
+<!-- 專案包含多個生成的 Trace 檔案，用於測試不同的存取模式與資料大小 (每個檔案包含 100 筆交易)： -->
+
+Located in `traces/`:
+- **Sequential Access (循序存取)**:
+    - `seq_read_128B.trace`, `seq_read_256B.trace`, `seq_read_512B.trace`
+    - `seq_write_128B.trace`, `seq_write_256B.trace`, `seq_write_512B.trace`
+- **Random Access (隨機存取)**:
+    - `rand_read_128B.trace`, `rand_read_256B.trace`, `rand_read_512B.trace`
+    - `rand_write_128B.trace`, `rand_write_256B.trace`, `rand_write_512B.trace`
+
+### Trace Format (Trace 格式)
+Each line represents a memory request:
+<!-- 每一行代表一個記憶體請求： -->
+`[R/W] [Address] [Size_Power_of_2] [Burst_Code]`
+
+- `ARx 0000000126B52000 6 00`: Read 64B ($2^6$), 1 Burst.
+- `AWx 0000000126B52000 6 01`: Write 64B, 2 Bursts.
 
 ## Configuration (設定)
 
@@ -43,9 +72,6 @@ Defines timing parameters and clock frequency.
     "BurstLength": 16,
     "tRP": 29,
     "tRCD": 29,
-    "tCL": 28,
-    "tCWL": 26,
-    "tRAS": 67,
     ...
 }
 ```
@@ -64,14 +90,6 @@ Defines which bits of the physical address correspond to DRAM hierarchy levels. 
 }
 ```
 
-### Trace Format (Trace 格式)
-Each line represents a memory request:
-<!-- 每一行代表一個記憶體請求： -->
-`[R/W] [Address] [Size_Power_of_2] [Burst_Code]`
-
-- `ARx 0000000126B52000 6 00`: Read 64B ($2^6$), 1 Burst.
-- `AWx 0000000126B52000 6 01`: Write 64B, 2 Bursts.
-
 ## Output (輸出)
 The simulator outputs performance statistics:
 <!-- 模擬器輸出效能統計數據： -->
@@ -82,5 +100,7 @@ The simulator outputs performance statistics:
   <!-- 有效資料傳輸率 (GB/s)。 -->
 - **Utilization**: Percentage of time data bus was busy.
   <!-- 資料匯流排忙碌時間百分比。 -->
+- **Average Queue Depth**: Average number of requests in the command queue.
+  <!-- 平均隊列深度：指令隊列中的平均請求數量。 -->
 - **Page Stats**: Hits, Misses, Conflicts count.
   <!-- Page 狀態統計：Hits, Misses, Conflicts 次數。 -->
