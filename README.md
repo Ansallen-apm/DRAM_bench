@@ -25,6 +25,14 @@ Run the simulator using `src/main.py`:
 python3 src/main.py --config <config_file> --mapping <mapping_file> --trace <trace_file> --policy <FIFO|PageHitFirst> --queue_depth <1-1024>
 ```
 
+### Quick Run (快速執行)
+Use the provided script to run a default simulation:
+<!-- 使用提供的腳本執行預設模擬： -->
+
+```bash
+./run_sim.sh
+```
+
 ### Arguments (參數)
 - `--config`: Path to timing config JSON (e.g., `configs/LP4_cfg.json`).
 - `--mapping`: Path to address mapping JSON (e.g., `configs/mapping.json`).
