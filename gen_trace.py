@@ -47,7 +47,7 @@ def generate_trace(mode, rw_type, size_bytes, num_transactions, filename):
 if __name__ == "__main__":
     os.makedirs("traces", exist_ok=True)
 
-    sizes = [128, 256, 512]
+    sizes = [64, 128, 256, 512]
     modes = ['seq', 'rand']
     rw_types = ['R', 'W']
 
