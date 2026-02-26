@@ -33,6 +33,17 @@ Use the provided script to run a default simulation:
 ./run_sim.sh
 ```
 
+### Benchmark (效能測試)
+Run the benchmark script to simulate multiple traces with different configurations (LPDDR4/LPDDR5):
+<!-- 執行效能測試腳本以使用不同配置 (LPDDR4/LPDDR5) 模擬多個 Trace 檔案： -->
+
+```bash
+python3 run_benchmark.py
+```
+
+The results will be printed to the console and saved in [BENCHMARK_RESULTS.md](BENCHMARK_RESULTS.md).
+<!-- 結果將顯示在控制台並儲存於 BENCHMARK_RESULTS.md。 -->
+
 ### Arguments (參數)
 - `--config`: Path to timing config JSON (e.g., `configs/LP4_cfg.json`).
 - `--mapping`: Path to address mapping JSON (e.g., `configs/mapping.json`).
@@ -49,8 +60,8 @@ python3 src/main.py --config configs/LP4_cfg.json --mapping configs/mapping.json
 
 ## Trace Files (Trace 檔案)
 
-The repository includes several generated trace files for testing different access patterns and data sizes (100 transactions each):
-<!-- 專案包含多個生成的 Trace 檔案，用於測試不同的存取模式與資料大小 (每個檔案包含 100 筆交易)： -->
+The repository includes several generated trace files for testing different access patterns and data sizes:
+<!-- 專案包含多個生成的 Trace 檔案，用於測試不同的存取模式與資料大小： -->
 
 Located in `traces/`:
 - **Sequential Access (循序存取)**:
