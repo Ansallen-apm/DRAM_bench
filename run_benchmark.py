@@ -3,10 +3,10 @@ import glob
 import subprocess
 import re
 
-def run_simulation(trace_file):
+def run_simulation(trace_file, config_file="configs/LP4_cfg.json"):
     cmd = [
         "python3", "src/main.py",
-        "--config", "configs/LP4_cfg.json",
+        "--config", config_file,
         "--mapping", "configs/mapping.json",
         "--trace", trace_file,
         "--policy", "FIFO",
@@ -17,7 +17,7 @@ def run_simulation(trace_file):
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return result.stdout
     except subprocess.CalledProcessError as e:
-        print(f"Error running simulation for {trace_file}: {e}")
+        print(f"Error running simulation for {trace_file} with {config_file}: {e}")
         return None
 
 def parse_output(output):
@@ -51,26 +51,25 @@ def parse_output(output):
 
     return metrics
 
-def main():
+def run_benchmark(config_file, config_name):
+    print(f"\nRunning benchmark for {config_name}...")
     trace_files = glob.glob("traces/*.trace")
     # Filter out basic traces
     trace_files = [f for f in trace_files if "basic" not in f and "basic100" not in f]
     trace_files.sort()
 
-    print(f"Found {len(trace_files)} trace files to process.")
-
     results = []
 
     for trace_file in trace_files:
         print(f"Running simulation for {trace_file}...")
-        output = run_simulation(trace_file)
+        output = run_simulation(trace_file, config_file)
         if output:
             metrics = parse_output(output)
             metrics["Trace File"] = os.path.basename(trace_file)
             results.append(metrics)
 
     # Print Markdown Table
-    print("\n## Simulation Results\n")
+    print(f"\n## Simulation Results ({config_name})\n")
     headers = ["Trace File", "Total Cycles", "Bandwidth (GB/s)", "Utilization (%)", "Avg Queue Depth", "Page Hits", "Page Misses", "Page Conflicts"]
 
     # Print Header
@@ -89,6 +88,10 @@ def main():
             str(res["Page Conflicts"])
         ]
         print("| " + " | ".join(row) + " |")
+
+def main():
+    run_benchmark("configs/LP4_cfg.json", "LPDDR4")
+    run_benchmark("configs/LP5_cfg.json", "LPDDR5")
 
 if __name__ == "__main__":
     main()
