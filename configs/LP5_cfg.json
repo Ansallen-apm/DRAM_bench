@@ -1,7 +1,7 @@
 {
     "Description": "LPDDR5-6400 Timing Configuration",
     "ClockFrequencyMHz": 3200,
-    "Prefetch": 32,
+    "Prefetch": 16,
     "BitWidth": 32,
     "tRP": 60,
     "tRCD": 60,

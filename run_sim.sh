@@ -4,7 +4,7 @@
 # 預設參數
 CONFIG="configs/LP4_cfg.json"
 MAPPING="configs/mapping.json"
-TRACE="traces/sample.trace"
+TRACE="traces/basic100/sample.trace"
 POLICY="FIFO"
 QUEUE_DEPTH=16
 
