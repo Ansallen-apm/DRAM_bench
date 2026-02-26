@@ -1,16 +1,16 @@
 {
-    "Description": "LPDDR4-3200 Timing Configuration",
-    "ClockFrequencyMHz": 1600,
+    "Description": "LPDDR4-6400 Timing Configuration",
+    "ClockFrequencyMHz": 3200,
     "Prefetch": 16,
     "BitWidth": 32,
-    "tRP": 29,
-    "tRCD": 29,
-    "tCL": 28,
-    "tCWL": 26,
-    "tRAS": 67,
-    "tRC": 96,
-    "tWR": 29,
-    "tCCD": 8,
-    "tRRD": 10,
-    "tFAW": 40
+    "tRP": 60,
+    "tRCD": 60,
+    "tCL": 60,
+    "tCWL": 56,
+    "tRAS": 140,
+    "tRC": 200,
+    "tWR": 60,
+    "tCCD": 16,
+    "tRRD": 20,
+    "tFAW": 80
 }
