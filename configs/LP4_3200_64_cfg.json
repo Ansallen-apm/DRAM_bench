@@ -1,0 +1,18 @@
+{
+    "Description": "LPDDR4-3200 Timing Configuration (64-bit)",
+    "ClockFrequencyMHz": 1600,
+    "Prefetch": 16,
+    "BitWidth": 64,
+    "tRP": 30,
+    "tRCD": 30,
+    "tCL": 30,
+    "tCWL": 28,
+    "tRAS": 70,
+    "tRC": 100,
+    "tWR": 30,
+    "tCCD": 8,
+    "tWTR": 5,
+    "tRTW": 7,
+    "tRRD": 10,
+    "tFAW": 40
+}
