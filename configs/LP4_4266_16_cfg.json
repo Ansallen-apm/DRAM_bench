@@ -1,0 +1,18 @@
+{
+    "Description": "LPDDR4-4266 Timing Configuration (16-bit)",
+    "ClockFrequencyMHz": 2133,
+    "Prefetch": 16,
+    "BitWidth": 16,
+    "tRP": 40,
+    "tRCD": 40,
+    "tCL": 40,
+    "tCWL": 38,
+    "tRAS": 94,
+    "tRC": 134,
+    "tWR": 40,
+    "tCCD": 11,
+    "tWTR": 7,
+    "tRTW": 10,
+    "tRRD": 14,
+    "tFAW": 54
+}
