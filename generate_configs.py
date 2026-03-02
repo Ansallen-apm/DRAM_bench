@@ -53,3 +53,12 @@ for bw in [16, 32, 64]:
     with open(f"configs/LP5_8533_{bw}_cfg.json", "w") as f:
         json.dump(cfg, f, indent=4)
         f.write("\n")
+
+
+# Generate LP4-3200 config (for 64-bit only as requested)
+freq_lp4_3200 = 1600
+desc = "LPDDR4-3200 Timing Configuration (64-bit)"
+cfg = scale_config(base_config, freq_lp4_3200, desc, 64)
+with open("configs/LP4_3200_64_cfg.json", "w") as f:
+    json.dump(cfg, f, indent=4)
+    f.write("\n")
