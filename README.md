@@ -45,7 +45,7 @@ The results will be printed to the console and saved in [BENCHMARK_RESULTS.md](B
 <!-- 結果將顯示在控制台並儲存於 BENCHMARK_RESULTS.md。 -->
 
 ### Arguments (參數)
-- `--config`: Path to timing config JSON (e.g., `configs/LP4_cfg.json`).
+- `--config`: Path to timing config JSON (e.g., `configs/LP4_32_cfg.json`).
 - `--mapping`: Path to address mapping JSON (e.g., `configs/mapping.json`).
 - `--trace`: Path to trace file (e.g., `traces/sample.trace`).
 - `--policy`: Scheduling policy (`FIFO` or `PageHitFirst`).
@@ -55,7 +55,7 @@ The results will be printed to the console and saved in [BENCHMARK_RESULTS.md](B
 ### Example (範例)
 
 ```bash
-python3 src/main.py --config configs/LP4_cfg.json --mapping configs/mapping.json --trace traces/sample.trace --policy FIFO --queue_depth 32
+python3 src/main.py --config configs/LP4_32_cfg.json --mapping configs/mapping.json --trace traces/basic100/seq_read_128B.trace --policy FIFO --queue_depth 32
 ```
 
 ## Trace Files (Trace 檔案)
@@ -81,16 +81,26 @@ Each line represents a memory request:
 
 ## Configuration (設定)
 
-### Timing Config (`configs/LP4_cfg.json`)
-Defines timing parameters and clock frequency.
-<!-- 定義時序參數與時脈頻率。 -->
+### Timing Config (`configs/LP4_32_cfg.json`)
+Defines timing parameters, clock frequency, and data bus width (BitWidth).
+We provide configurations for LPDDR4 and LPDDR5 with different BitWidths (16-bit, 32-bit, 64-bit).
+<!-- 定義時序參數、時脈頻率與資料匯流排寬度 (BitWidth)。我們提供 LPDDR4 與 LPDDR5 的不同 BitWidth (16-bit, 32-bit, 64-bit) 設定檔。 -->
+
+Available config files (可用的設定檔):
+- `configs/LP4_16_cfg.json`
+- `configs/LP4_32_cfg.json`
+- `configs/LP4_64_cfg.json`
+- `configs/LP5_16_cfg.json`
+- `configs/LP5_32_cfg.json`
+- `configs/LP5_64_cfg.json`
 
 ```json
 {
-    "ClockFrequencyMHz": 1600,
-    "BurstLength": 16,
-    "tRP": 29,
-    "tRCD": 29,
+    "ClockFrequencyMHz": 3200,
+    "Prefetch": 16,
+    "BitWidth": 32,
+    "tRP": 60,
+    "tRCD": 60,
     ...
 }
 ```
