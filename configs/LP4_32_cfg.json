@@ -11,6 +11,8 @@
     "tRC": 200,
     "tWR": 60,
     "tCCD": 16,
+    "tWTR": 10,
+    "tRTW": 14,
     "tRRD": 20,
     "tFAW": 80
 }

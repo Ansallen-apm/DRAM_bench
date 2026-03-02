@@ -29,6 +29,8 @@ class BankState:
         self.tWR = config['tWR']
         self.tCCD = config.get('tCCD', 4)
         self.tRTP = max(4, config.get('tRTP', 8))
+        self.tWTR = config.get('tWTR', 10)
+        self.tRTW = config.get('tRTW', 14)
 
     def get_next_act_time(self):
         """
@@ -56,14 +58,20 @@ class BankState:
         Calculates the earliest time a READ command can be issued.
         計算 READ 指令最早可發出的時間。
         """
-        return max(self.last_act + self.tRCD, self.last_read + self.tCCD, self.last_write + self.tCCD)
+        burst_cycles = self.config.get('Prefetch', 16) // 2
+        # Write-to-Read turnaround penalty
+        wtr_rec = self.last_write + self.tCWL + burst_cycles + self.tWTR
+        return max(self.last_act + self.tRCD, self.last_read + self.tCCD, wtr_rec)
 
     def get_next_write_time(self):
         """
         Calculates the earliest time a WRITE command can be issued.
         計算 WRITE 指令最早可發出的時間。
         """
-        return max(self.last_act + self.tRCD, self.last_write + self.tCCD, self.last_read + self.tCCD)
+        burst_cycles = self.config.get('Prefetch', 16) // 2
+        # Read-to-Write turnaround penalty
+        rtw_rec = self.last_read + self.tCL + burst_cycles + self.tRTW - self.tCWL
+        return max(self.last_act + self.tRCD, self.last_write + self.tCCD, rtw_rec)
 
 
 class DRAMController:
@@ -86,6 +94,10 @@ class DRAMController:
         # 每個 Channel 獨立追蹤匯流排閒置時間
         self.data_bus_free_time = {} # Channel ID -> int
         self.cmd_bus_free_time = {}  # Channel ID -> int
+
+        # Track the direction of the last data transfer per channel ('RD' or 'WR')
+        # 追蹤每個 Channel 最後一次資料傳輸的方向 ('RD' 或 'WR')
+        self.last_data_dir = {}      # Channel ID -> 'RD' or 'WR'
 
         # Global ACT Constraints
         # 全域 ACT 限制
@@ -153,8 +165,12 @@ class DRAMController:
                 # Channel specific data bus free time
                 channel_id = req['mapped'].get('Channel', 0)
                 ch_data_bus_free = self.data_bus_free_time.get(channel_id, 0)
+                last_dir = self.last_data_dir.get(channel_id, cmd_type)
 
-                min_issue_time = max(ready_time, ch_data_bus_free - latency)
+                # Add 1 cycle turnaround penalty if switching between READ and WRITE on the data bus
+                bus_turnaround = 1 if last_dir != cmd_type else 0
+
+                min_issue_time = max(ready_time, ch_data_bus_free + bus_turnaround - latency)
 
                 return (min_issue_time <= self.current_time), cmd_type, min_issue_time
 
@@ -259,7 +275,17 @@ class DRAMController:
             actual_busy_cycles = (req['size'] + bytes_per_cycle - 1) // bytes_per_cycle
 
             data_start = self.current_time + latency
-            self.data_bus_free_time[channel_id] = data_start + duration
+
+            # If switching direction, there is a physical gap on the bus
+            last_dir = self.last_data_dir.get(channel_id, cmd_type)
+            bus_turnaround = 1 if last_dir != cmd_type else 0
+
+            # Ensure the bus is truly free (handles out-of-order latency differences)
+            ch_data_bus_free = self.data_bus_free_time.get(channel_id, 0)
+            actual_data_start = max(data_start, ch_data_bus_free + bus_turnaround)
+
+            self.data_bus_free_time[channel_id] = actual_data_start + duration
+            self.last_data_dir[channel_id] = cmd_type
 
             # Only count the cycles actually used for data transfer towards utilization
             # 僅將實際用於傳輸資料的週期計入利用率
