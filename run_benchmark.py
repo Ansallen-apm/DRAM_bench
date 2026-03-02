@@ -54,11 +54,8 @@ def parse_output(output):
 def run_benchmark(config_file, config_name, output_file):
     print(f"\nRunning benchmark for {config_name}...")
     trace_files = glob.glob("traces/*.trace")
-    # Filter out basic traces and keep only 64B and 128B
-    trace_files = [
-        f for f in trace_files
-        if "basic" not in f and "basic100" not in f and ("64B" in f or "128B" in f)
-    ]
+    # Filter out basic traces
+    trace_files = [f for f in trace_files if "basic" not in f and "basic100" not in f]
     trace_files.sort()
 
     results = []
