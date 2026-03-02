@@ -44,10 +44,18 @@ def generate_trace(mode, rw_type, size_bytes, num_transactions, filename):
 
     print(f"Generated {filename}")
 
-if __name__ == "__main__":
-    os.makedirs("traces", exist_ok=True)
+import argparse
 
-    sizes = [64, 128, 256, 512]
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate DRAM trace files.")
+    parser.add_argument('--out_dir', type=str, default='traces', help='Output directory')
+    parser.add_argument('--num_transactions', type=int, default=550, help='Number of transactions per trace')
+    parser.add_argument('--sizes', type=int, nargs='+', default=[64, 128, 256, 512], help='Trace sizes in bytes')
+    args = parser.parse_args()
+
+    os.makedirs(args.out_dir, exist_ok=True)
+
+    sizes = args.sizes
     modes = ['seq', 'rand']
     rw_types = ['R', 'W']
 
@@ -57,5 +65,5 @@ if __name__ == "__main__":
                 # Filename: mode_rw_size.trace
                 # e.g., seq_read_128B.trace
                 rw_name = "read" if rw == 'R' else "write"
-                filename = f"traces/{mode}_{rw_name}_{size}B.trace"
-                generate_trace(mode, rw, size, 550, filename)
+                filename = f"{args.out_dir}/{mode}_{rw_name}_{size}B.trace"
+                generate_trace(mode, rw, size, args.num_transactions, filename)
