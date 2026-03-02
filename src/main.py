@@ -108,12 +108,20 @@ def main():
     # Stats Calculation
     # 統計計算
     stats = controller.stats
-    # Total cycles should account for the last data transfer completion
-    # 總週期數應包含最後一次資料傳輸完成的時間
-    total_cycles = max(controller.current_time, controller.data_bus_free_time)
+    # Total cycles should account for the last data transfer completion across all channels
+    # 總週期數應包含所有通道最後一次資料傳輸完成的時間
+    max_data_bus_free_time = 0
+    if controller.data_bus_free_time:
+        max_data_bus_free_time = max(controller.data_bus_free_time.values())
+
+    total_cycles = max(controller.current_time, max_data_bus_free_time)
     # Avoid div by zero
     # 避免除以零
     total_cycles = max(1, total_cycles)
+
+    # Calculate number of channels for utilization adjustment
+    # 計算通道數量以調整利用率
+    num_channels = max(1, len(controller.data_bus_free_time))
 
     freq_mhz = config['ClockFrequencyMHz']
     cycle_time_ns = 1000.0 / freq_mhz
@@ -121,7 +129,12 @@ def main():
     total_time_sec = total_time_ns / 1e9
 
     bw_gbs = (stats['total_bytes'] / 1e9) / total_time_sec if total_time_sec > 0 else 0
-    utilization = (stats['bus_busy_cycles'] / total_cycles) * 100
+
+    # Utilization across all available channels
+    # 利用率計算應除以總通道數量 (因為總資源是 週期 * 通道數)
+    total_available_cycles = total_cycles * num_channels
+    utilization = (stats['bus_busy_cycles'] / total_available_cycles) * 100 if total_available_cycles > 0 else 0
+
     avg_queue_depth = stats['cumulative_queue_depth'] / stats['queue_depth_samples'] if stats['queue_depth_samples'] > 0 else 0
 
     print("\nSimulation Results:")
