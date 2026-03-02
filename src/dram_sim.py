@@ -269,11 +269,6 @@ class DRAMController:
             num_bursts = (req['size'] + self.bytes_per_burst - 1) // self.bytes_per_burst
             duration = num_bursts * self.burst_cycles
 
-            # Actual data transferred (in cycles) might be less if the request is smaller than a full burst
-            # 實際傳輸資料的週期可能小於完整的 burst (若請求大小小於一個 burst)
-            bytes_per_cycle = (self.bit_width // 8) * 2 # DDR (2 transfers per cycle)
-            actual_busy_cycles = (req['size'] + bytes_per_cycle - 1) // bytes_per_cycle
-
             data_start = self.current_time + latency
 
             # If switching direction, there is a physical gap on the bus
@@ -287,9 +282,9 @@ class DRAMController:
             self.data_bus_free_time[channel_id] = actual_data_start + duration
             self.last_data_dir[channel_id] = cmd_type
 
-            # Only count the cycles actually used for data transfer towards utilization
-            # 僅將實際用於傳輸資料的週期計入利用率
-            self.stats['bus_busy_cycles'] += actual_busy_cycles
+            # Count the full burst duration as bus busy time to reflect actual hardware utilization
+            # 計算完整的 Burst 週期作為匯流排忙碌時間，反映真實的硬體利用率
+            self.stats['bus_busy_cycles'] += duration
             self.stats['total_bytes'] += req['size']
 
             return True
