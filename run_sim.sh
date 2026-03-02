@@ -2,7 +2,7 @@
 
 # Default Parameters
 # 預設參數
-CONFIG="configs/LP4_cfg.json"
+CONFIG="configs/LP4_32_cfg.json"
 MAPPING="configs/mapping.json"
 TRACE="traces/basic100/sample.trace"
 POLICY="FIFO"

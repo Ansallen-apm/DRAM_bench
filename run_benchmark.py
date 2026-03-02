@@ -3,7 +3,7 @@ import glob
 import subprocess
 import re
 
-def run_simulation(trace_file, config_file="configs/LP4_cfg.json"):
+def run_simulation(trace_file, config_file="configs/LP4_32_cfg.json"):
     cmd = [
         "python3", "src/main.py",
         "--config", config_file,
@@ -51,7 +51,7 @@ def parse_output(output):
 
     return metrics
 
-def run_benchmark(config_file, config_name):
+def run_benchmark(config_file, config_name, output_file):
     print(f"\nRunning benchmark for {config_name}...")
     trace_files = glob.glob("traces/*.trace")
     # Filter out basic traces and keep only 64B and 128B
@@ -71,13 +71,14 @@ def run_benchmark(config_file, config_name):
             metrics["Trace File"] = os.path.basename(trace_file)
             results.append(metrics)
 
-    # Print Markdown Table
-    print(f"\n## Simulation Results ({config_name})\n")
+    # Generate Markdown Table
+    markdown_output = []
+    markdown_output.append(f"\n## Simulation Results ({config_name})\n")
     headers = ["Trace File", "Total Cycles", "Bandwidth (GB/s)", "Utilization (%)", "Avg Queue Depth", "Page Hits", "Page Misses", "Page Conflicts"]
 
-    # Print Header
-    print("| " + " | ".join(headers) + " |")
-    print("| " + " | ".join(["---"] * len(headers)) + " |")
+    # Header
+    markdown_output.append("| " + " | ".join(headers) + " |")
+    markdown_output.append("| " + " | ".join(["---"] * len(headers)) + " |")
 
     for res in results:
         row = [
@@ -90,11 +91,31 @@ def run_benchmark(config_file, config_name):
             str(res["Page Misses"]),
             str(res["Page Conflicts"])
         ]
-        print("| " + " | ".join(row) + " |")
+        markdown_output.append("| " + " | ".join(row) + " |")
+
+    # Print to console and append to file
+    final_output = "\n".join(markdown_output) + "\n"
+    print(final_output)
+    with open(output_file, "a") as f:
+        f.write(final_output)
 
 def main():
-    run_benchmark("configs/LP4_cfg.json", "LPDDR4")
-    run_benchmark("configs/LP5_cfg.json", "LPDDR5")
+    output_file = "BENCHMARK_RESULTS.md"
+    # Clear existing file contents
+    with open(output_file, "w") as f:
+        f.write("# DRAM Simulator Benchmark Results\n")
+
+    configs = [
+        ("configs/LP4_16_cfg.json", "LPDDR4 (16-bit)"),
+        ("configs/LP4_32_cfg.json", "LPDDR4 (32-bit)"),
+        ("configs/LP4_64_cfg.json", "LPDDR4 (64-bit)"),
+        ("configs/LP5_16_cfg.json", "LPDDR5 (16-bit)"),
+        ("configs/LP5_32_cfg.json", "LPDDR5 (32-bit)"),
+        ("configs/LP5_64_cfg.json", "LPDDR5 (64-bit)")
+    ]
+
+    for config_path, config_name in configs:
+        run_benchmark(config_path, config_name, output_file)
 
 if __name__ == "__main__":
     main()
