@@ -13,7 +13,7 @@ def run_sim(cfg_path, q_depth):
     cmd = [
         "python3", "src/main.py",
         "--config", cfg_path,
-        "--mapping", "configs/mapping.json",
+        "--mapping", "configs/mapping_2ch.json",
         "--trace", trace,
         "--policy", "FIFO",
         "--queue_depth", q_depth
