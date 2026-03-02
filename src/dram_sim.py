@@ -82,8 +82,10 @@ class DRAMController:
         self.banks = {}
         self.completed_requests = 0
 
-        self.data_bus_free_time = 0
-        self.cmd_bus_free_time = 0
+        # Track bus free time per channel
+        # 每個 Channel 獨立追蹤匯流排閒置時間
+        self.data_bus_free_time = {} # Channel ID -> int
+        self.cmd_bus_free_time = {}  # Channel ID -> int
 
         # Global ACT Constraints
         # 全域 ACT 限制
@@ -148,7 +150,11 @@ class DRAMController:
                 num_bursts = (req['size'] + self.bytes_per_burst - 1) // self.bytes_per_burst
                 duration = num_bursts * self.burst_cycles
 
-                min_issue_time = max(ready_time, self.data_bus_free_time - latency)
+                # Channel specific data bus free time
+                channel_id = req['mapped'].get('Channel', 0)
+                ch_data_bus_free = self.data_bus_free_time.get(channel_id, 0)
+
+                min_issue_time = max(ready_time, ch_data_bus_free - latency)
 
                 return (min_issue_time <= self.current_time), cmd_type, min_issue_time
 
@@ -191,6 +197,8 @@ class DRAMController:
         bank = self.get_bank(req)
         row = req['mapped']['Row']
 
+        channel_id = req['mapped'].get('Channel', 0)
+
         # Classify request status if not already done
         # 若尚未分類請求狀態，進行分類 (Hit/Miss/Conflict)
         if 'status' not in req:
@@ -206,7 +214,7 @@ class DRAMController:
                 req['status'] = 'MISS'
                 self.stats['page_misses'] += 1
 
-        self.cmd_bus_free_time = self.current_time + 1
+        self.cmd_bus_free_time[channel_id] = self.current_time + 1
 
         if cmd_type == 'PRE':
             bank.last_pre = self.current_time
@@ -251,7 +259,7 @@ class DRAMController:
             actual_busy_cycles = (req['size'] + bytes_per_cycle - 1) // bytes_per_cycle
 
             data_start = self.current_time + latency
-            self.data_bus_free_time = data_start + duration
+            self.data_bus_free_time[channel_id] = data_start + duration
 
             # Only count the cycles actually used for data transfer towards utilization
             # 僅將實際用於傳輸資料的週期計入利用率
@@ -270,21 +278,27 @@ class DRAMController:
         self.stats['cumulative_queue_depth'] += len(self.queue)
         self.stats['queue_depth_samples'] += 1
 
-        if self.current_time < self.cmd_bus_free_time:
-            self.current_time = self.cmd_bus_free_time
-            # Don't return, check if we can do something now?
-            # If cmd bus busy, we can't issue.
-            # But we just updated current_time.
-            # Loop again? No, tick is one step.
-            return
-
         candidates = []
         min_next_time = float('inf')
 
+        # Track issued channels in this cycle to avoid multiple commands on the same channel cmd bus
+        issued_channels = set()
+
         for i, req in enumerate(self.queue):
+            # Ensure mapped address exists
+            if 'mapped' not in req:
+                req['mapped'] = self.mapper.map_address(req['address'])
+
+            channel_id = req['mapped'].get('Channel', 0)
+
+            # If command bus for this channel is busy, skip
+            if self.current_time < self.cmd_bus_free_time.get(channel_id, 0) or channel_id in issued_channels:
+                min_next_time = min(min_next_time, self.cmd_bus_free_time.get(channel_id, 0))
+                continue
+
             ready, cmd, next_ts = self.get_command_status(req)
             if ready:
-                candidates.append((i, cmd))
+                candidates.append((i, cmd, channel_id))
             else:
                 if next_ts < min_next_time:
                     min_next_time = next_ts
@@ -298,30 +312,48 @@ class DRAMController:
                 self.current_time += 1
             return
 
-        selected_idx = -1
-        selected_cmd = None
+        # Issue commands for parallel channels
+        # We process candidates per channel to respect scheduling policies
 
-        if self.scheduler_type == 'FIFO':
-            selected_idx, selected_cmd = candidates[0]
+        # Group candidates by channel
+        channel_candidates = {}
+        for idx, cmd, channel_id in candidates:
+            if channel_id not in channel_candidates:
+                channel_candidates[channel_id] = []
+            channel_candidates[channel_id].append((idx, cmd))
 
-        elif self.scheduler_type == 'PageHitFirst':
-            hit_candidate = None
-            for idx, cmd in candidates:
-                if cmd in ['RD', 'WR']:
-                    hit_candidate = (idx, cmd)
-                    break
+        selected_indices = []
 
-            if hit_candidate:
-                selected_idx, selected_cmd = hit_candidate
+        for channel_id, ch_candidates in channel_candidates.items():
+            selected_idx = -1
+            selected_cmd = None
+
+            if self.scheduler_type == 'FIFO':
+                selected_idx, selected_cmd = ch_candidates[0]
+
+            elif self.scheduler_type == 'PageHitFirst':
+                hit_candidate = None
+                for idx, cmd in ch_candidates:
+                    if cmd in ['RD', 'WR']:
+                        hit_candidate = (idx, cmd)
+                        break
+
+                if hit_candidate:
+                    selected_idx, selected_cmd = hit_candidate
+                else:
+                    selected_idx, selected_cmd = ch_candidates[0]
             else:
-                selected_idx, selected_cmd = candidates[0]
-        else:
-            selected_idx, selected_cmd = candidates[0]
+                selected_idx, selected_cmd = ch_candidates[0]
 
-        done = self.issue_command(selected_idx, selected_cmd)
+            if selected_idx != -1:
+                issued_channels.add(channel_id)
+                done = self.issue_command(selected_idx, selected_cmd)
+                if done:
+                    selected_indices.append(selected_idx)
 
-        if done:
-            self.queue.pop(selected_idx)
+        # Remove completed requests from back to front
+        for idx in sorted(selected_indices, reverse=True):
+            self.queue.pop(idx)
             self.completed_requests += 1
 
         self.current_time += 1
