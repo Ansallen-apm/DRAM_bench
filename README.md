@@ -46,7 +46,7 @@ The results will be printed to the console and saved in [BENCHMARK_RESULTS.md](B
 
 ### Arguments (參數)
 - `--config`: Path to timing config JSON (e.g., `configs/LP4_32_cfg.json`).
-- `--mapping`: Path to address mapping JSON (e.g., `configs/mapping.json`).
+- `--mapping`: Path to address mapping JSON (e.g., `configs/mapping_2ch.json`).
 - `--trace`: Path to trace file (e.g., `traces/sample.trace`).
 - `--policy`: Scheduling policy (`FIFO` or `PageHitFirst`).
 - `--queue_depth`: Command Queue Depth (Integer, Range: 1-1024). Default is 16.
@@ -55,7 +55,7 @@ The results will be printed to the console and saved in [BENCHMARK_RESULTS.md](B
 ### Example (範例)
 
 ```bash
-python3 src/main.py --config configs/LP4_32_cfg.json --mapping configs/mapping.json --trace traces/basic100/seq_read_128B.trace --policy FIFO --queue_depth 32
+python3 src/main.py --config configs/LP4_32_cfg.json --mapping configs/mapping_2ch.json --trace traces/basic100/seq_read_128B.trace --policy FIFO --queue_depth 32
 ```
 
 ## Trace Files (Trace 檔案)
@@ -105,17 +105,18 @@ Available config files (可用的設定檔):
 }
 ```
 
-### Address Mapping (`configs/mapping.json`)
+### Address Mapping (`configs/mapping_*.json`)
 Defines which bits of the physical address correspond to DRAM hierarchy levels. Format: `[[MSB, LSB], ...]`
-<!-- 定義實體位址的哪些位元對應到 DRAM 階層。格式：`[[MSB, LSB], ...]` -->
+We provide single-channel (`mapping_1ch.json`) and dual-channel (`mapping_2ch.json`) mapping examples.
+<!-- 定義實體位址的哪些位元對應到 DRAM 階層。格式：`[[MSB, LSB], ...]` 我們提供單通道與雙通道的映射範例。 -->
 
 ```json
 {
-    "Channel": [[33, 33]],
-    "Rank": [[32, 31]],
-    "Bank": [[16, 14], [5, 4]],
-    "Row": [[30, 17]],
-    "Column": [[13, 3]]
+    "Channel": [[10, 10]],
+    "Rank": [[11, 11]],
+    "Bank": [[17, 15]],
+    "Row": [[30, 18]],
+    "Column": [[9, 4], [14, 12]]
 }
 ```
 

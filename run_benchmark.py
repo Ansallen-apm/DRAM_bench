@@ -7,7 +7,7 @@ def run_simulation(trace_file, config_file="configs/LP4_32_cfg.json"):
     cmd = [
         "python3", "src/main.py",
         "--config", config_file,
-        "--mapping", "configs/mapping.json",
+        "--mapping", "configs/mapping_2ch.json",
         "--trace", trace_file,
         "--policy", "FIFO",
         "--queue_depth", "16"

@@ -3,7 +3,7 @@
 # Default Parameters
 # 預設參數
 CONFIG="configs/LP4_32_cfg.json"
-MAPPING="configs/mapping.json"
+MAPPING="configs/mapping_2ch.json"
 TRACE="traces/basic100/sample.trace"
 POLICY="FIFO"
 QUEUE_DEPTH=16
