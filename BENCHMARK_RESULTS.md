@@ -1,6 +1,6 @@
 # DRAM Simulator Benchmark Results
 
-## Simulation Results (LPDDR4 (16-bit))
+## Simulation Results (LPDDR4-6400 (16-bit))
 
 | Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -21,7 +21,7 @@
 | seq_write_512B.trace | 35444 | 25.42 | 99.31 | 15.76 | 514 | 32 | 4 |
 | seq_write_64B.trace | 4571 | 24.64 | 96.26 | 15.78 | 543 | 7 | 0 |
 
-## Simulation Results (LPDDR4 (32-bit))
+## Simulation Results (LPDDR4-6400 (32-bit))
 
 | Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -42,7 +42,7 @@
 | seq_write_512B.trace | 17780 | 50.68 | 98.99 | 15.76 | 514 | 32 | 4 |
 | seq_write_64B.trace | 3297 | 34.16 | 66.73 | 15.85 | 543 | 7 | 0 |
 
-## Simulation Results (LPDDR4 (64-bit))
+## Simulation Results (LPDDR4-6400 (64-bit))
 
 | Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -63,7 +63,70 @@
 | seq_write_512B.trace | 8948 | 100.71 | 98.35 | 15.76 | 514 | 32 | 4 |
 | seq_write_64B.trace | 3297 | 34.16 | 33.36 | 15.85 | 543 | 7 | 0 |
 
-## Simulation Results (LPDDR5 (16-bit))
+## Simulation Results (LPDDR4-4266 (16-bit))
+
+| Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| rand_read_128B.trace | 9331 | 16.09 | 94.31 | 15.90 | 1 | 32 | 517 |
+| rand_read_256B.trace | 18064 | 16.63 | 97.43 | 15.87 | 0 | 32 | 518 |
+| rand_read_512B.trace | 35771 | 16.79 | 98.40 | 15.92 | 0 | 32 | 518 |
+| rand_read_64B.trace | 5631 | 13.33 | 78.14 | 15.83 | 0 | 32 | 518 |
+| rand_write_128B.trace | 9379 | 16.01 | 93.83 | 15.88 | 0 | 32 | 518 |
+| rand_write_256B.trace | 18238 | 16.47 | 96.50 | 15.75 | 0 | 32 | 518 |
+| rand_write_512B.trace | 36365 | 16.52 | 96.80 | 15.87 | 0 | 32 | 518 |
+| rand_write_64B.trace | 6065 | 12.38 | 72.55 | 15.82 | 0 | 32 | 518 |
+| seq_read_128B.trace | 8976 | 16.73 | 98.04 | 15.66 | 538 | 12 | 0 |
+| seq_read_256B.trace | 17744 | 16.93 | 99.19 | 15.75 | 530 | 20 | 0 |
+| seq_read_512B.trace | 35408 | 16.96 | 99.41 | 15.76 | 514 | 32 | 4 |
+| seq_read_64B.trace | 4528 | 16.58 | 97.17 | 15.78 | 543 | 7 | 0 |
+| seq_write_128B.trace | 8974 | 16.73 | 98.06 | 15.66 | 538 | 12 | 0 |
+| seq_write_256B.trace | 17742 | 16.93 | 99.20 | 15.75 | 530 | 20 | 0 |
+| seq_write_512B.trace | 35406 | 16.96 | 99.42 | 15.76 | 514 | 32 | 4 |
+| seq_write_64B.trace | 4526 | 16.59 | 97.22 | 15.78 | 543 | 7 | 0 |
+
+## Simulation Results (LPDDR4-4266 (32-bit))
+
+| Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| rand_read_128B.trace | 5450 | 27.55 | 80.73 | 15.86 | 1 | 32 | 517 |
+| rand_read_256B.trace | 9190 | 32.68 | 95.76 | 15.87 | 0 | 32 | 518 |
+| rand_read_512B.trace | 17987 | 33.39 | 97.85 | 15.92 | 0 | 32 | 518 |
+| rand_read_64B.trace | 5328 | 14.09 | 41.29 | 15.84 | 0 | 32 | 518 |
+| rand_write_128B.trace | 5766 | 26.04 | 76.31 | 15.84 | 0 | 32 | 518 |
+| rand_write_256B.trace | 9331 | 32.19 | 94.31 | 15.80 | 0 | 32 | 518 |
+| rand_write_512B.trace | 18198 | 33.01 | 96.71 | 15.85 | 0 | 32 | 518 |
+| rand_write_64B.trace | 5654 | 13.28 | 38.91 | 15.82 | 0 | 32 | 518 |
+| seq_read_128B.trace | 4528 | 33.16 | 97.17 | 15.66 | 538 | 12 | 0 |
+| seq_read_256B.trace | 8912 | 33.70 | 98.74 | 15.75 | 530 | 20 | 0 |
+| seq_read_512B.trace | 17744 | 33.85 | 99.19 | 15.76 | 514 | 32 | 4 |
+| seq_read_64B.trace | 2737 | 27.43 | 80.38 | 15.76 | 543 | 7 | 0 |
+| seq_write_128B.trace | 4526 | 33.18 | 97.22 | 15.66 | 538 | 12 | 0 |
+| seq_write_256B.trace | 8910 | 33.71 | 98.77 | 15.75 | 530 | 20 | 0 |
+| seq_write_512B.trace | 17742 | 33.85 | 99.20 | 15.76 | 514 | 32 | 4 |
+| seq_write_64B.trace | 2735 | 27.45 | 80.44 | 15.76 | 543 | 7 | 0 |
+
+## Simulation Results (LPDDR4-4266 (64-bit))
+
+| Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| rand_read_128B.trace | 5122 | 29.32 | 42.95 | 15.84 | 1 | 32 | 517 |
+| rand_read_256B.trace | 5636 | 53.29 | 78.07 | 15.81 | 0 | 32 | 518 |
+| rand_read_512B.trace | 9216 | 65.18 | 95.49 | 15.88 | 0 | 32 | 518 |
+| rand_read_64B.trace | 5328 | 14.09 | 20.65 | 15.84 | 0 | 32 | 518 |
+| rand_write_128B.trace | 5466 | 27.47 | 40.25 | 15.83 | 0 | 32 | 518 |
+| rand_write_256B.trace | 5903 | 50.88 | 74.54 | 15.81 | 0 | 32 | 518 |
+| rand_write_512B.trace | 9171 | 65.49 | 95.95 | 15.84 | 0 | 32 | 518 |
+| rand_write_64B.trace | 5654 | 13.28 | 19.46 | 15.82 | 0 | 32 | 518 |
+| seq_read_128B.trace | 2346 | 64.01 | 93.78 | 15.79 | 538 | 12 | 0 |
+| seq_read_256B.trace | 4496 | 66.80 | 97.86 | 15.75 | 530 | 20 | 0 |
+| seq_read_512B.trace | 8912 | 67.40 | 98.74 | 15.76 | 514 | 32 | 4 |
+| seq_read_64B.trace | 2737 | 27.43 | 40.19 | 15.76 | 543 | 7 | 0 |
+| seq_write_128B.trace | 2344 | 64.06 | 93.86 | 15.79 | 538 | 12 | 0 |
+| seq_write_256B.trace | 4494 | 66.83 | 97.91 | 15.75 | 530 | 20 | 0 |
+| seq_write_512B.trace | 8910 | 67.41 | 98.77 | 15.76 | 514 | 32 | 4 |
+| seq_write_64B.trace | 2735 | 27.45 | 40.22 | 15.76 | 543 | 7 | 0 |
+
+## Simulation Results (LPDDR5-6400 (16-bit))
 
 | Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -84,7 +147,7 @@
 | seq_write_512B.trace | 35444 | 25.42 | 99.31 | 15.76 | 514 | 32 | 4 |
 | seq_write_64B.trace | 4571 | 24.64 | 96.26 | 15.78 | 543 | 7 | 0 |
 
-## Simulation Results (LPDDR5 (32-bit))
+## Simulation Results (LPDDR5-6400 (32-bit))
 
 | Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -105,7 +168,7 @@
 | seq_write_512B.trace | 17780 | 50.68 | 98.99 | 15.76 | 514 | 32 | 4 |
 | seq_write_64B.trace | 3297 | 34.16 | 66.73 | 15.85 | 543 | 7 | 0 |
 
-## Simulation Results (LPDDR5 (64-bit))
+## Simulation Results (LPDDR5-6400 (64-bit))
 
 | Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -125,3 +188,66 @@
 | seq_write_256B.trace | 4532 | 99.42 | 97.09 | 15.75 | 530 | 20 | 0 |
 | seq_write_512B.trace | 8948 | 100.71 | 98.35 | 15.76 | 514 | 32 | 4 |
 | seq_write_64B.trace | 3297 | 34.16 | 33.36 | 15.85 | 543 | 7 | 0 |
+
+## Simulation Results (LPDDR5-8533 (16-bit))
+
+| Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| rand_read_128B.trace | 10841 | 27.70 | 81.17 | 15.87 | 1 | 32 | 517 |
+| rand_read_256B.trace | 18397 | 32.65 | 95.67 | 15.88 | 0 | 32 | 518 |
+| rand_read_512B.trace | 35971 | 33.40 | 97.86 | 15.92 | 0 | 32 | 518 |
+| rand_read_64B.trace | 10577 | 14.20 | 41.60 | 15.87 | 0 | 32 | 518 |
+| rand_write_128B.trace | 11404 | 26.34 | 77.17 | 15.88 | 0 | 32 | 518 |
+| rand_write_256B.trace | 18594 | 32.30 | 94.65 | 15.81 | 0 | 32 | 518 |
+| rand_write_512B.trace | 36189 | 33.20 | 97.27 | 15.86 | 0 | 32 | 518 |
+| rand_write_64B.trace | 11032 | 13.61 | 39.88 | 15.82 | 0 | 32 | 518 |
+| seq_read_128B.trace | 9056 | 33.16 | 97.17 | 15.66 | 538 | 12 | 0 |
+| seq_read_256B.trace | 17824 | 33.70 | 98.74 | 15.75 | 530 | 20 | 0 |
+| seq_read_512B.trace | 35488 | 33.85 | 99.19 | 15.76 | 514 | 32 | 4 |
+| seq_read_64B.trace | 5472 | 27.44 | 80.41 | 15.78 | 543 | 7 | 0 |
+| seq_write_128B.trace | 9051 | 33.18 | 97.23 | 15.66 | 538 | 12 | 0 |
+| seq_write_256B.trace | 17819 | 33.71 | 98.77 | 15.75 | 530 | 20 | 0 |
+| seq_write_512B.trace | 35483 | 33.86 | 99.20 | 15.76 | 514 | 32 | 4 |
+| seq_write_64B.trace | 5467 | 27.47 | 80.48 | 15.78 | 543 | 7 | 0 |
+
+## Simulation Results (LPDDR5-8533 (32-bit))
+
+| Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| rand_read_128B.trace | 10192 | 29.47 | 43.17 | 15.85 | 1 | 32 | 517 |
+| rand_read_256B.trace | 11237 | 53.45 | 78.31 | 15.82 | 0 | 32 | 518 |
+| rand_read_512B.trace | 18406 | 65.27 | 95.62 | 15.88 | 0 | 32 | 518 |
+| rand_read_64B.trace | 10533 | 14.26 | 20.89 | 15.85 | 0 | 32 | 518 |
+| rand_write_128B.trace | 10667 | 28.15 | 41.25 | 15.83 | 0 | 32 | 518 |
+| rand_write_256B.trace | 11690 | 51.38 | 75.28 | 15.80 | 0 | 32 | 518 |
+| rand_write_512B.trace | 18313 | 65.60 | 96.11 | 15.85 | 0 | 32 | 518 |
+| rand_write_64B.trace | 10975 | 13.68 | 20.05 | 15.83 | 0 | 32 | 518 |
+| seq_read_128B.trace | 4686 | 64.09 | 93.90 | 15.77 | 538 | 12 | 0 |
+| seq_read_256B.trace | 8992 | 66.80 | 97.86 | 15.75 | 530 | 20 | 0 |
+| seq_read_512B.trace | 17824 | 67.40 | 98.74 | 15.76 | 514 | 32 | 4 |
+| seq_read_64B.trace | 4477 | 33.54 | 49.14 | 15.85 | 543 | 7 | 0 |
+| seq_write_128B.trace | 4681 | 64.16 | 94.00 | 15.77 | 538 | 12 | 0 |
+| seq_write_256B.trace | 8987 | 66.84 | 97.92 | 15.75 | 530 | 20 | 0 |
+| seq_write_512B.trace | 17819 | 67.42 | 98.77 | 15.76 | 514 | 32 | 4 |
+| seq_write_64B.trace | 4472 | 33.58 | 49.19 | 15.85 | 543 | 7 | 0 |
+
+## Simulation Results (LPDDR5-8533 (64-bit))
+
+| Trace File | Total Cycles | Bandwidth (GB/s) | Utilization (%) | Avg Queue Depth | Page Hits | Page Misses | Page Conflicts |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| rand_read_128B.trace | 10156 | 29.57 | 21.66 | 15.84 | 1 | 32 | 517 |
+| rand_read_256B.trace | 10465 | 57.40 | 42.04 | 15.79 | 0 | 32 | 518 |
+| rand_read_512B.trace | 10721 | 112.05 | 82.08 | 15.84 | 0 | 32 | 518 |
+| rand_read_64B.trace | 10533 | 14.26 | 10.44 | 15.85 | 0 | 32 | 518 |
+| rand_write_128B.trace | 10603 | 28.32 | 20.75 | 15.83 | 0 | 32 | 518 |
+| rand_write_256B.trace | 11032 | 54.45 | 39.88 | 15.82 | 0 | 32 | 518 |
+| rand_write_512B.trace | 11884 | 101.09 | 74.05 | 15.77 | 0 | 32 | 518 |
+| rand_write_64B.trace | 10975 | 13.68 | 10.02 | 15.83 | 0 | 32 | 518 |
+| seq_read_128B.trace | 3478 | 86.35 | 63.25 | 15.78 | 538 | 12 | 0 |
+| seq_read_256B.trace | 4598 | 130.63 | 95.69 | 15.74 | 530 | 20 | 0 |
+| seq_read_512B.trace | 8992 | 133.60 | 97.86 | 15.76 | 514 | 32 | 4 |
+| seq_read_64B.trace | 4477 | 33.54 | 24.57 | 15.85 | 543 | 7 | 0 |
+| seq_write_128B.trace | 3473 | 86.47 | 63.35 | 15.78 | 538 | 12 | 0 |
+| seq_write_256B.trace | 4593 | 130.78 | 95.80 | 15.74 | 530 | 20 | 0 |
+| seq_write_512B.trace | 8987 | 133.67 | 97.92 | 15.76 | 514 | 32 | 4 |
+| seq_write_64B.trace | 4472 | 33.58 | 24.60 | 15.85 | 543 | 7 | 0 |

@@ -103,12 +103,18 @@ def main():
         f.write("# DRAM Simulator Benchmark Results\n")
 
     configs = [
-        ("configs/LP4_16_cfg.json", "LPDDR4 (16-bit)"),
-        ("configs/LP4_32_cfg.json", "LPDDR4 (32-bit)"),
-        ("configs/LP4_64_cfg.json", "LPDDR4 (64-bit)"),
-        ("configs/LP5_16_cfg.json", "LPDDR5 (16-bit)"),
-        ("configs/LP5_32_cfg.json", "LPDDR5 (32-bit)"),
-        ("configs/LP5_64_cfg.json", "LPDDR5 (64-bit)")
+        ("configs/LP4_16_cfg.json", "LPDDR4-6400 (16-bit)"),
+        ("configs/LP4_32_cfg.json", "LPDDR4-6400 (32-bit)"),
+        ("configs/LP4_64_cfg.json", "LPDDR4-6400 (64-bit)"),
+        ("configs/LP4_4266_16_cfg.json", "LPDDR4-4266 (16-bit)"),
+        ("configs/LP4_4266_32_cfg.json", "LPDDR4-4266 (32-bit)"),
+        ("configs/LP4_4266_64_cfg.json", "LPDDR4-4266 (64-bit)"),
+        ("configs/LP5_16_cfg.json", "LPDDR5-6400 (16-bit)"),
+        ("configs/LP5_32_cfg.json", "LPDDR5-6400 (32-bit)"),
+        ("configs/LP5_64_cfg.json", "LPDDR5-6400 (64-bit)"),
+        ("configs/LP5_8533_16_cfg.json", "LPDDR5-8533 (16-bit)"),
+        ("configs/LP5_8533_32_cfg.json", "LPDDR5-8533 (32-bit)"),
+        ("configs/LP5_8533_64_cfg.json", "LPDDR5-8533 (64-bit)")
     ]
 
     for config_path, config_name in configs:
