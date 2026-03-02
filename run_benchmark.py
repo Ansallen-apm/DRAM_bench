@@ -57,6 +57,7 @@ def run_benchmark(config_file, config_name, output_file):
     # Filter out basic traces and keep only 64B and 128B
     trace_files = [
         f for f in trace_files
+        f for f in trace_files
         if "basic" not in f and "basic100" not in f and ("64B" in f or "128B" in f)
     ]
     trace_files.sort()

@@ -13,6 +13,7 @@ def run_simulation(trace_file, config_file="configs/LP4_32_cfg.json"):
         "--queue_depth", "16"
     ]
 
+
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return result.stdout
@@ -31,6 +32,7 @@ def parse_output(output):
         "Page Conflicts": 0
     }
 
+
     patterns = {
         "Total Cycles": r"Total Cycles \(總週期\): (\d+)",
         "Bandwidth (GB/s)": r"Bandwidth \(頻寬\): ([\d\.]+) GB/s",
@@ -41,6 +43,7 @@ def parse_output(output):
         "Page Conflicts": r"Page Conflicts \(Page 衝突\): (\d+)"
     }
 
+
     for key, pattern in patterns.items():
         match = re.search(pattern, output)
         if match:
@@ -49,12 +52,16 @@ def parse_output(output):
             else:
                 metrics[key] = int(match.group(1))
 
+
     return metrics
 
 def run_benchmark(config_file, config_name, output_file):
     print(f"\nRunning perf_limit benchmark for {config_name}...")
     trace_files = glob.glob("traces/perf_limit/*.trace")
     trace_files.sort()
+
+    results = []
+
 
     results = []
 
