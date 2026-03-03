@@ -9,8 +9,8 @@ def run_simulation(trace_file, config_file="configs/LP4_32_cfg.json"):
         "--config", config_file,
         "--mapping", "configs/mapping_2ch.json",
         "--trace", trace_file,
-        "--policy", "FIFO",
-        "--queue_depth", "16"
+        "--policy", "PageHitFirst",
+        "--queue_depth", "128"
     ]
 
     try:
