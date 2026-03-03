@@ -9,8 +9,8 @@ def run_simulation(trace_file, config_file="configs/LP4_32_cfg.json"):
         "--config", config_file,
         "--mapping", "configs/mapping_2ch.json",
         "--trace", trace_file,
-        "--policy", "FIFO",
-        "--queue_depth", "16"
+        "--policy", "PageHitFirst",
+        "--queue_depth", "128"
     ]
 
     try:
@@ -102,13 +102,16 @@ def main():
         f.write("此測試使用 `traces/perf_limit/` 目錄下的 20,000 筆交易 trace 進行壓力測試，並使用雙通道 (`mapping_2ch.json`) 架構。\n\n")
 
     # We test the primary configs as requested (16, 32, 64 bit for LP4-6400 and LP5-6400)
+    # Plus LPDDR4-4266 (32-bit) and LPDDR5-8533 (32-bit)
     configs = [
         ("configs/LP4_16_cfg.json", "LPDDR4-6400 (16-bit)"),
         ("configs/LP4_32_cfg.json", "LPDDR4-6400 (32-bit)"),
         ("configs/LP4_64_cfg.json", "LPDDR4-6400 (64-bit)"),
+        ("configs/LP4_4266_32_cfg.json", "LPDDR4-4266 (32-bit)"),
         ("configs/LP5_16_cfg.json", "LPDDR5-6400 (16-bit)"),
         ("configs/LP5_32_cfg.json", "LPDDR5-6400 (32-bit)"),
-        ("configs/LP5_64_cfg.json", "LPDDR5-6400 (64-bit)")
+        ("configs/LP5_64_cfg.json", "LPDDR5-6400 (64-bit)"),
+        ("configs/LP5_8533_32_cfg.json", "LPDDR5-8533 (32-bit)")
     ]
 
     for config_path, config_name in configs:
