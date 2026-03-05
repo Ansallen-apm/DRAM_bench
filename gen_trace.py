@@ -36,7 +36,10 @@ def generate_trace(mode, rw_type, size_bytes, num_transactions, filename):
                 # Random 36-bit address aligned to 64 bytes
                 addr = random.randint(0, (2**36) // 64) * 64
 
-            rw_str = f"A{rw_type}x"
+            # For mixed trace, randomly pick R or W for each transaction
+            current_rw_type = random.choice(['R', 'W']) if rw_type == 'RW' else rw_type
+
+            rw_str = f"A{current_rw_type}x"
             addr_str = f"{addr:016X}"
 
             line = f"{rw_str} {addr_str} {bus_width_log2} {burst_code_hex}\n"
@@ -57,13 +60,19 @@ if __name__ == "__main__":
 
     sizes = args.sizes
     modes = ['seq', 'rand']
-    rw_types = ['R', 'W']
+    rw_types = ['R', 'W', 'RW']
 
     for mode in modes:
         for rw in rw_types:
             for size in sizes:
                 # Filename: mode_rw_size.trace
                 # e.g., seq_read_128B.trace
-                rw_name = "read" if rw == 'R' else "write"
+                if rw == 'R':
+                    rw_name = "read"
+                elif rw == 'W':
+                    rw_name = "write"
+                else:
+                    rw_name = "mix"
+
                 filename = f"{args.out_dir}/{mode}_{rw_name}_{size}B.trace"
                 generate_trace(mode, rw, size, args.num_transactions, filename)

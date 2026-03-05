@@ -64,6 +64,7 @@ def main():
                     hits_fifo = t_fifo["page_hits"]
                     hits_phf = t_phf["page_hits"]
 
+
                     cyc_diff_pct = ((cyc_fifo - cyc_phf) / cyc_fifo) * 100
                     util_diff = util_phf - util_fifo
 
