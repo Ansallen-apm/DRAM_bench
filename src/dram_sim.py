@@ -167,8 +167,15 @@ class DRAMController:
                 ch_data_bus_free = self.data_bus_free_time.get(channel_id, 0)
                 last_dir = self.last_data_dir.get(channel_id, cmd_type)
 
-                # Add 1 cycle turnaround penalty if switching between READ and WRITE on the data bus
-                bus_turnaround = 1 if last_dir != cmd_type else 0
+                # Bus Turnaround Penalty based on physical constraints
+                bus_turnaround = 0
+                if last_dir != cmd_type:
+                    if last_dir == 'RD' and cmd_type == 'WR':
+                        # Read to Write turnaround: tRTW
+                        bus_turnaround = self.config.get('tRTW', 14)
+                    elif last_dir == 'WR' and cmd_type == 'RD':
+                        # Write to Read turnaround: tWTR
+                        bus_turnaround = self.config.get('tWTR', 10)
 
                 min_issue_time = max(ready_time, ch_data_bus_free + bus_turnaround - latency)
 
@@ -273,7 +280,12 @@ class DRAMController:
 
             # If switching direction, there is a physical gap on the bus
             last_dir = self.last_data_dir.get(channel_id, cmd_type)
-            bus_turnaround = 1 if last_dir != cmd_type else 0
+            bus_turnaround = 0
+            if last_dir != cmd_type:
+                if last_dir == 'RD' and cmd_type == 'WR':
+                    bus_turnaround = self.config.get('tRTW', 14)
+                elif last_dir == 'WR' and cmd_type == 'RD':
+                    bus_turnaround = self.config.get('tWTR', 10)
 
             # Ensure the bus is truly free (handles out-of-order latency differences)
             ch_data_bus_free = self.data_bus_free_time.get(channel_id, 0)
