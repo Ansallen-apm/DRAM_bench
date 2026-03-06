@@ -34,15 +34,20 @@ Use the provided script to run a default simulation:
 ```
 
 ### Benchmark (效能測試)
-Run the benchmark script to simulate multiple traces with different configurations (LPDDR4/LPDDR5):
-<!-- 執行效能測試腳本以使用不同配置 (LPDDR4/LPDDR5) 模擬多個 Trace 檔案： -->
+Run the benchmark script to simulate multiple traces with different configurations (LPDDR4/LPDDR5).
+All benchmark scripts and their corresponding results are now organized inside the `sim_rslt/` directory.
+<!-- 執行效能測試腳本以使用不同配置 (LPDDR4/LPDDR5) 模擬多個 Trace 檔案。所有的效能測試腳本與對應的結果皆已整理至 sim_rslt/ 目錄中。 -->
+
+For example, to run the standard benchmark:
+<!-- 例如，執行標準效能測試： -->
 
 ```bash
+cd sim_rslt/BENCHMARK_RESULTS/
 python3 run_benchmark.py
 ```
 
-The results will be printed to the console and saved in [BENCHMARK_RESULTS.md](BENCHMARK_RESULTS.md).
-<!-- 結果將顯示在控制台並儲存於 BENCHMARK_RESULTS.md。 -->
+The results will be printed to the console and saved in the local [BENCHMARK_RESULTS.md](sim_rslt/BENCHMARK_RESULTS/BENCHMARK_RESULTS.md).
+<!-- 結果將顯示在控制台並儲存於當前目錄的 BENCHMARK_RESULTS.md 中。 -->
 
 ### Arguments (參數)
 - `--config`: Path to timing config JSON (e.g., `configs/LP4_32_cfg.json`).

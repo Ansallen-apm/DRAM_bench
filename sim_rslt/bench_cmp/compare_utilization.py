@@ -29,8 +29,8 @@ def parse_md(filepath):
     return results
 
 def main():
-    res_16 = parse_md("BENCHMARK_RESULTS.md")
-    res_64 = parse_md("bench_rslt.md")
+    res_16 = parse_md("../BENCHMARK_RESULTS/BENCHMARK_RESULTS.md")
+    res_64 = parse_md("../bench_rslt/bench_rslt.md")
 
     with open("bench_cmp.md", "w") as f:
         f.write("# DRAM Simulator Benchmark Utilization Comparison (QD=16 vs QD=64)\n")

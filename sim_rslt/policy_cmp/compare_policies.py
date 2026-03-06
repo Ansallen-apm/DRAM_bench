@@ -35,7 +35,7 @@ def parse_md(filepath):
     return results
 
 def main():
-    res = parse_md("bench_rslt.md")
+    res = parse_md("../bench_rslt/bench_rslt.md")
 
     with open("policy_cmp.md", "w", encoding='utf-8') as f:
         f.write("# DRAM Simulator Policy Comparison (FIFO vs PageHitFirst)\n")
