@@ -3,11 +3,11 @@ import glob
 import subprocess
 import re
 
-def run_simulation(trace_file, queue_depth, config_file="configs/LP4_32_cfg.json"):
+def run_simulation(trace_file, queue_depth, config_file="../../configs/LP4_32_cfg.json"):
     cmd = [
-        "python3", "src/main.py",
+        "python3", "../../src/main.py",
         "--config", config_file,
-        "--mapping", "configs/mapping_2ch.json",
+        "--mapping", "../../configs/mapping_2ch.json",
         "--trace", trace_file,
         "--policy", "FIFO",
         "--queue_depth", str(queue_depth)
@@ -46,11 +46,11 @@ def parse_output(output):
     return metrics
 
 def main():
-    trace_files = glob.glob("traces/basic100/*.trace")
+    trace_files = glob.glob("../../traces/basic100/*.trace")
     trace_files.sort()
 
     results = {}
-    config_file = "configs/LP4_32_cfg.json"
+    config_file = "../../configs/LP4_32_cfg.json"
 
     print("Running simulations for basic100 traces...")
     for trace_file in trace_files:

@@ -5,9 +5,9 @@ import re
 
 def run_simulation(trace_file, queue_depth, config_file):
     cmd = [
-        "python3", "src/main.py",
+        "python3", "../../src/main.py",
         "--config", config_file,
-        "--mapping", "configs/mapping_2ch.json",
+        "--mapping", "../../configs/mapping_2ch.json",
         "--trace", trace_file,
         "--policy", "PageHitFirst",
         "--queue_depth", str(queue_depth)
@@ -47,19 +47,19 @@ def parse_output(output):
 
 def main():
     configs = [
-        ("configs/LP4_16_cfg.json", "LPDDR4-6400 (16-bit)"),
-        ("configs/LP4_32_cfg.json", "LPDDR4-6400 (32-bit)"),
-        ("configs/LP4_64_cfg.json", "LPDDR4-6400 (64-bit)"),
-        ("configs/LP4_4266_16_cfg.json", "LPDDR4-4266 (16-bit)"),
-        ("configs/LP4_4266_32_cfg.json", "LPDDR4-4266 (32-bit)"),
-        ("configs/LP4_4266_64_cfg.json", "LPDDR4-4266 (64-bit)"),
-        ("configs/LP4_3200_64_cfg.json", "LPDDR4-3200 (64-bit)"),
-        ("configs/LP5_8533_16_cfg.json", "LPDDR5-8533 (16-bit)"),
-        ("configs/LP5_8533_32_cfg.json", "LPDDR5-8533 (32-bit)"),
-        ("configs/LP5_8533_64_cfg.json", "LPDDR5-8533 (64-bit)")
+        ("../../configs/LP4_16_cfg.json", "LPDDR4-6400 (16-bit)"),
+        ("../../configs/LP4_32_cfg.json", "LPDDR4-6400 (32-bit)"),
+        ("../../configs/LP4_64_cfg.json", "LPDDR4-6400 (64-bit)"),
+        ("../../configs/LP4_4266_16_cfg.json", "LPDDR4-4266 (16-bit)"),
+        ("../../configs/LP4_4266_32_cfg.json", "LPDDR4-4266 (32-bit)"),
+        ("../../configs/LP4_4266_64_cfg.json", "LPDDR4-4266 (64-bit)"),
+        ("../../configs/LP4_3200_64_cfg.json", "LPDDR4-3200 (64-bit)"),
+        ("../../configs/LP5_8533_16_cfg.json", "LPDDR5-8533 (16-bit)"),
+        ("../../configs/LP5_8533_32_cfg.json", "LPDDR5-8533 (32-bit)"),
+        ("../../configs/LP5_8533_64_cfg.json", "LPDDR5-8533 (64-bit)")
     ]
 
-    trace_files = glob.glob("traces/mix/*.trace")
+    trace_files = glob.glob("../../traces/mix/*.trace")
     trace_files.sort()
 
     output_file = "mix_analysis_rslt.md"

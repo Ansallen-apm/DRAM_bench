@@ -3,14 +3,14 @@ import glob
 import subprocess
 import re
 
-def run_simulation(trace_file, config_file="configs/LP4_32_cfg.json"):
+def run_simulation(trace_file, config_file="../../configs/LP4_32_cfg.json"):
     cmd = [
-        "python3", "src/main.py",
+        "python3", "../../src/main.py",
         "--config", config_file,
-        "--mapping", "configs/mapping_2ch.json",
+        "--mapping", "../../configs/mapping_2ch.json",
         "--trace", trace_file,
-        "--policy", "PageHitFirst",
-        "--queue_depth", "128"
+        "--policy", "FIFO",
+        "--queue_depth", "16"
     ]
 
     try:
@@ -52,8 +52,13 @@ def parse_output(output):
     return metrics
 
 def run_benchmark(config_file, config_name, output_file):
-    print(f"\nRunning perf_limit benchmark for {config_name}...")
-    trace_files = glob.glob("traces/perf_limit/*.trace")
+    print(f"\nRunning benchmark for {config_name}...")
+    trace_files = glob.glob("../../traces/*.trace")
+    # Filter out basic traces and keep only 64B and 128B
+    trace_files = [
+        f for f in trace_files
+        if "basic" not in f and "basic100" not in f and ("64B" in f or "128B" in f)
+    ]
     trace_files.sort()
 
     results = []
@@ -95,23 +100,24 @@ def run_benchmark(config_file, config_name, output_file):
         f.write(final_output)
 
 def main():
-    output_file = "perf_limit.md"
+    output_file = "BENCHMARK_RESULTS.md"
     # Clear existing file contents
     with open(output_file, "w") as f:
-        f.write("# DRAM Simulator Performance Limit Results (20k Transactions)\n")
-        f.write("此測試使用 `traces/perf_limit/` 目錄下的 20,000 筆交易 trace 進行壓力測試，並使用雙通道 (`mapping_2ch.json`) 架構。\n\n")
+        f.write("# DRAM Simulator Benchmark Results\n")
 
-    # We test the primary configs as requested (16, 32, 64 bit for LP4-6400 and LP5-6400)
-    # Plus LPDDR4-4266 (32-bit) and LPDDR5-8533 (32-bit)
     configs = [
-        ("configs/LP4_16_cfg.json", "LPDDR4-6400 (16-bit)"),
-        ("configs/LP4_32_cfg.json", "LPDDR4-6400 (32-bit)"),
-        ("configs/LP4_64_cfg.json", "LPDDR4-6400 (64-bit)"),
-        ("configs/LP4_4266_32_cfg.json", "LPDDR4-4266 (32-bit)"),
-        ("configs/LP5_16_cfg.json", "LPDDR5-6400 (16-bit)"),
-        ("configs/LP5_32_cfg.json", "LPDDR5-6400 (32-bit)"),
-        ("configs/LP5_64_cfg.json", "LPDDR5-6400 (64-bit)"),
-        ("configs/LP5_8533_32_cfg.json", "LPDDR5-8533 (32-bit)")
+        ("../../configs/LP4_16_cfg.json", "LPDDR4-6400 (16-bit)"),
+        ("../../configs/LP4_32_cfg.json", "LPDDR4-6400 (32-bit)"),
+        ("../../configs/LP4_64_cfg.json", "LPDDR4-6400 (64-bit)"),
+        ("../../configs/LP4_4266_16_cfg.json", "LPDDR4-4266 (16-bit)"),
+        ("../../configs/LP4_4266_32_cfg.json", "LPDDR4-4266 (32-bit)"),
+        ("../../configs/LP4_4266_64_cfg.json", "LPDDR4-4266 (64-bit)"),
+        ("../../configs/LP5_16_cfg.json", "LPDDR5-6400 (16-bit)"),
+        ("../../configs/LP5_32_cfg.json", "LPDDR5-6400 (32-bit)"),
+        ("../../configs/LP5_64_cfg.json", "LPDDR5-6400 (64-bit)"),
+        ("../../configs/LP5_8533_16_cfg.json", "LPDDR5-8533 (16-bit)"),
+        ("../../configs/LP5_8533_32_cfg.json", "LPDDR5-8533 (32-bit)"),
+        ("../../configs/LP5_8533_64_cfg.json", "LPDDR5-8533 (64-bit)")
     ]
 
     for config_path, config_name in configs:
