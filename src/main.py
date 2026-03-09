@@ -65,6 +65,7 @@ def main():
     parser.add_argument('--trace', required=True, help='Path to trace file (Trace 檔案路徑)')
     parser.add_argument('--policy', default='FIFO', choices=['FIFO', 'PageHitFirst'], help='Scheduling policy (排程策略)')
     parser.add_argument('--queue_depth', type=int, default=16, help='Command queue depth (指令隊列深度)')
+    parser.add_argument('--interval_us', type=float, default=None, help='Interval in microseconds for calculating utilization (計算利用率的時間區間，單位為 us)')
 
     args = parser.parse_args()
 
@@ -90,6 +91,24 @@ def main():
     print(f"Starting simulation with {args.config} and {args.mapping}")
     print(f"Policy: {args.policy}, Queue Depth: {args.queue_depth}")
 
+    interval_log_file = None
+    interval_cycles = None
+    next_interval_cycle = None
+    last_bus_busy_cycles = 0
+    interval_count = 1
+
+    if args.interval_us is not None:
+        freq_mhz = config['ClockFrequencyMHz']
+        cycle_time_ns = 1000.0 / freq_mhz
+        interval_ns = args.interval_us * 1000.0
+        interval_cycles = interval_ns / cycle_time_ns
+        next_interval_cycle = interval_cycles
+
+        interval_log_file = open('interval.log', 'w')
+        print(f"Interval Logging Enabled: {args.interval_us} us (approx {int(interval_cycles)} cycles)")
+        interval_log_file.write(f"Interval Logging Enabled: {args.interval_us} us\n")
+        interval_log_file.write(f"Interval (us), Utilization (%)\n")
+
     # Simulation Loop
     # 模擬迴圈
     next_req = next(trace_iter, None)
@@ -104,6 +123,36 @@ def main():
         # Run Simulator Step
         # 執行模擬器步進
         controller.tick()
+
+        # Interval utilization logging
+        if interval_cycles is not None and controller.current_time >= next_interval_cycle:
+            num_channels = max(1, len(controller.data_bus_free_time) if controller.data_bus_free_time else 1)
+
+            # Calculate cycles in this interval
+            # 計算這個區間的週期數
+            current_bus_busy_cycles = controller.stats['bus_busy_cycles']
+            interval_busy = current_bus_busy_cycles - last_bus_busy_cycles
+
+            # Available cycles across all channels in this interval
+            interval_total_available = interval_cycles * num_channels
+
+            interval_utilization = (interval_busy / interval_total_available) * 100 if interval_total_available > 0 else 0
+
+            interval_time_us = args.interval_us * interval_count
+
+            # 使用 :g 格式化，移除不必要的尾隨 0，但至少會呈現小數
+            formatted_time = f"{interval_time_us:.3g}"
+
+            msg = f"Interval {formatted_time} us: Utilization = {interval_utilization:.2f} %"
+            print(msg)
+            interval_log_file.write(f"{formatted_time}, {interval_utilization:.2f}\n")
+
+            last_bus_busy_cycles = current_bus_busy_cycles
+            interval_count += 1
+            next_interval_cycle += interval_cycles
+
+    if interval_log_file is not None:
+        interval_log_file.close()
 
     # Stats Calculation
     # 統計計算
