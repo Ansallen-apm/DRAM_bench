@@ -19,8 +19,18 @@ MAPPING="configs/mapping_2ch.json"
 QUEUE_DEPTH=64
 INTERVAL_US=0.1
 POLICY="PageHitFirst"
+SCRIPT="src/asyc_parall.py"
+
+# Parse arguments for the -o / --opt flag
+for arg in "$@"; do
+    if [ "$arg" == "-o" ] || [ "$arg" == "--opt" ]; then
+        SCRIPT="src/asyc_parall_opt.py"
+        echo "[INFO] Using the optimized caching simulator: $SCRIPT"
+    fi
+done
 
 echo "Starting parallel simulation batch..."
+echo "Simulator: $SCRIPT"
 echo "Total Configs: ${#CONFIGS[@]}"
 echo "Total Traces: ${#TRACES[@]}"
 echo "=========================================="
@@ -32,7 +42,7 @@ for CONFIG in "${CONFIGS[@]}"; do
         echo "Launching: Config=$CONFIG, Trace=$TRACE"
 
         # Run python in background using &
-        python3 src/asyc_parall.py \
+        python3 "$SCRIPT" \
             --config "$CONFIG" \
             --mapping "$MAPPING" \
             --trace "$TRACE" \

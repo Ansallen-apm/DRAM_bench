@@ -18,11 +18,11 @@ DRAM 模擬器
 
 ## Usage (使用方式)
 
-Run the simulator using `src/main.py`:
-<!-- 使用 src/main.py 執行模擬器： -->
+Run the simulator using `src/main.py` (Sequential) or `src/asyc_parall.py` (Parallel):
+<!-- 使用 src/main.py (循序) 或 src/asyc_parall.py (平行) 執行模擬器： -->
 
 ```bash
-python3 src/main.py --config <config_file> --mapping <mapping_file> --trace <trace_file> --policy <FIFO|PageHitFirst> --queue_depth <1-1024>
+python3 src/asyc_parall.py --config <config_file> --mapping <mapping_file> --trace <trace_file> --policy <FIFO|PageHitFirst> --queue_depth <1-1024>
 ```
 
 ### Quick Run (快速執行)
@@ -31,6 +31,14 @@ Use the provided script to run a default simulation:
 
 ```bash
 ./run_sim.sh
+```
+
+To run multiple parallel simulations concurrently, use the `run_parall.sh` script.
+To enable the experimental zero-error caching optimized simulator (`src/asyc_parall_opt.py`), append the `-o` or `--opt` flag:
+<!-- 若要同時執行多個平行模擬，請使用 `run_parall.sh` 腳本。若要啟用實驗性的零誤差快取最佳化模擬器 (`src/asyc_parall_opt.py`)，請加上 `-o` 或 `--opt` 參數： -->
+
+```bash
+./run_parall.sh --opt
 ```
 
 ### Benchmark (效能測試)
