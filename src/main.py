@@ -38,7 +38,7 @@ class TraceReader:
         type_str = parts[0]
         addr_str = parts[1]
         bus_width_log2 = int(parts[2])
-        burst_len_code = int(parts[3])
+        burst_len_code = int(parts[3], 16)
 
         is_write = 'W' in type_str
         address = int(addr_str, 16)
