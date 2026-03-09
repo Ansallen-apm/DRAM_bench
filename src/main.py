@@ -63,7 +63,7 @@ def main():
     parser.add_argument('--config', required=True, help='Path to timing config JSON (時序設定檔路徑)')
     parser.add_argument('--mapping', required=True, help='Path to address mapping JSON (位址映射檔路徑)')
     parser.add_argument('--trace', required=True, help='Path to trace file (Trace 檔案路徑)')
-    parser.add_argument('--policy', default='FIFO', choices=['FIFO', 'PageHitFirst'], help='Scheduling policy (排程策略)')
+    parser.add_argument('--policy', default='PageHitFirst', choices=['FIFO', 'PageHitFirst'], help='Scheduling policy (排程策略)')
     parser.add_argument('--queue_depth', type=int, default=16, help='Command queue depth (指令隊列深度)')
     parser.add_argument('--interval_us', type=float, default=None, help='Interval in microseconds for calculating utilization (計算利用率的時間區間，單位為 us)')
 
