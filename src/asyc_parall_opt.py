@@ -17,39 +17,29 @@ class DRAMControllerOpt(DRAMController):
     def __init__(self, config, mapper, scheduler_type='FIFO', queue_depth=16):
         super().__init__(config, mapper, scheduler_type, queue_depth)
 
-    def invalidate_cache(self, channel_id, rank_id, bank_id):
+    def invalidate_all_cache(self):
         """
-        Invalidates cached command status for requests matching specific scopes.
+        Invalidates all cached command statuses globally.
+        This ensures absolute correctness since ANY command issued on a channel
+        updates global constraints (like data bus direction, cmd bus occupancy,
+        tFAW window, etc.) which might affect the readiness of OTHER requests
+        in the queue.
         """
         for req in self.queue:
-            mapped = req.get('mapped', {})
-            req_ch = mapped.get('Channel', 0)
-            req_rk = mapped.get('Rank', 0)
-            req_bk = mapped.get('Bank', 0)
-
-            # If the channel matches and the rank/bank match, clear cache
-            # Rank level clearing is needed because of tRRD/tFAW
-            if req_ch == channel_id and req_rk == rank_id:
-                req.pop('cached_ready_time', None)
-                req.pop('cached_cmd_type', None)
+            req.pop('cached_ready_time', None)
+            req.pop('cached_cmd_type', None)
 
     def issue_command(self, req_idx, cmd_type):
         """
-        Overridden to invalidate cache upon state changes.
+        Overridden to invalidate cache globally upon state changes.
         """
-        req = self.queue[req_idx]
-        channel_id = req['mapped'].get('Channel', 0)
-        rank_id = req['mapped'].get('Rank', 0)
-        bank_id = req['mapped']['Bank']
-
         # Call the original issue_command logic
         done = super().issue_command(req_idx, cmd_type)
 
-        # Invalidate the cache for this rank/bank since state has progressed
-        self.invalidate_cache(channel_id, rank_id, bank_id)
+        # Any command issuance changes the channel/bus/bank state timeline.
+        # We must invalidate everything to prevent data inaccuracies.
+        self.invalidate_all_cache()
 
-        # Data Bus Direction Turnaround might affect other channels,
-        # but in our architecture Channels are isolated. So invalidating Rank is enough.
         return done
 
     def tick(self):
