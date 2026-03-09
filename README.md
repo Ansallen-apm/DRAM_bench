@@ -56,6 +56,8 @@ The results will be printed to the console and saved in the local [BENCHMARK_RES
 - `--policy`: Scheduling policy (`FIFO` or `PageHitFirst`).
 - `--queue_depth`: Command Queue Depth (Integer, Range: 1-1024). Default is 16.
   <!-- 指令隊列深度 (整數，範圍：1-1024)。預設為 16。 -->
+- `--interval_us`: (Optional) Interval in microseconds to calculate and log periodic utilization.
+  <!-- (選填) 計算並記錄週期性利用率的時間區間，單位為微秒 (us)。 -->
 
 ### Example (範例)
 
@@ -139,3 +141,5 @@ The simulator outputs performance statistics:
   <!-- 平均隊列深度：指令隊列中的平均請求數量。 -->
 - **Page Stats**: Hits, Misses, Conflicts count.
   <!-- Page 狀態統計：Hits, Misses, Conflicts 次數。 -->
+- **Interval Utilization (if `--interval_us` used)**: Real-time utilization over time intervals, printed to console and saved to `interval.log`.
+  <!-- 區間利用率 (若使用 `--interval_us`)：隨時間變化的即時利用率，將印出至控制台並儲存至 `interval.log`。 -->
