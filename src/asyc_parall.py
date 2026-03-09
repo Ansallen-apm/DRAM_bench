@@ -59,7 +59,9 @@ class TraceReader:
             'beats': beats # Optional, for debug
         }
 
-def run_channel_sim(channel_id, requests, config, mapping, policy, queue_depth, interval_us, verbose_interval):
+import os
+
+def run_channel_sim(channel_id, requests, config, mapping, policy, queue_depth, interval_us, verbose_interval, trace_name):
     """
     Simulates a single Channel independently.
     """
@@ -81,7 +83,7 @@ def run_channel_sim(channel_id, requests, config, mapping, policy, queue_depth, 
         interval_cycles = interval_ns / cycle_time_ns
         next_interval_cycle = interval_cycles
 
-        log_filename = f'interval_CH{channel_id}.log'
+        log_filename = f'interval_{trace_name}_CH{channel_id}.log'
         interval_log_file = open(log_filename, 'w')
         if verbose_interval:
             print(f"[CH{channel_id}] Interval Logging Enabled: {interval_us} us (approx {int(interval_cycles)} cycles)")
@@ -144,7 +146,7 @@ def main():
     parser.add_argument('--config', required=True, help='Path to timing config JSON (時序設定檔路徑)')
     parser.add_argument('--mapping', required=True, help='Path to address mapping JSON (位址映射檔路徑)')
     parser.add_argument('--trace', required=True, help='Path to trace file (Trace 檔案路徑)')
-    parser.add_argument('--policy', default='FIFO', choices=['FIFO', 'PageHitFirst'], help='Scheduling policy (排程策略)')
+    parser.add_argument('--policy', default='PageHitFirst', choices=['FIFO', 'PageHitFirst'], help='Scheduling policy (排程策略)')
     parser.add_argument('--queue_depth', type=int, default=16, help='Command queue depth (指令隊列深度)')
     parser.add_argument('--interval_us', type=float, default=None, help='Interval in microseconds for calculating utilization (計算利用率的時間區間，單位為 us)')
     parser.add_argument('--verbose_interval', action='store_true', help='Print interval utilization to console with [CHx] tag (在終端機印出帶有 [CHx] 標籤的區間利用率)')
@@ -188,10 +190,12 @@ def main():
 
     # Multiprocessing Pool
     # 使用多進程池平行處理各個 Channel
+    trace_base_name = os.path.splitext(os.path.basename(args.trace))[0]
+
     pool_args = []
     for ch_id, reqs in channel_requests.items():
         pool_args.append((
-            ch_id, reqs, config, mapping, args.policy, args.queue_depth, args.interval_us, args.verbose_interval
+            ch_id, reqs, config, mapping, args.policy, args.queue_depth, args.interval_us, args.verbose_interval, trace_base_name
         ))
 
     # Determine optimal number of processes

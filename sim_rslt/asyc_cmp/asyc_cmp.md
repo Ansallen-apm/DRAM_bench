@@ -1,14 +1,14 @@
-# Comparison of main.py vs asys_parall.py (basic100, QD=64)
+# Comparison of main.py vs asyc_parall.py (basic100, QD=64, Policy=PageHitFirst)
 
-This report compares the original sequential `main.py` against the new parallelized `asys_parall.py` on the `basic100` trace set.
+This report compares the original sequential `main.py` against the new parallelized `asyc_parall.py` on the `basic100` trace set.
 
-| Trace File | Total Bytes | Hits/Misses | main Cycles | asys Cycles | main BW | asys BW | main Util | asys Util |
+| Trace File | Total Bytes | Hits/Misses | main Cycles | asyc Cycles | main BW | asyc BW | main Util | asyc Util |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | rand_read_128B.trace | 12800 | 0/30 | 1359 | 1359 | 30.14 | 30.14 | 58.87% | 58.87% |
-| rand_read_256B.trace | 25600 | 0/30 | 2070 | 2152 | 39.57 | 38.07 | 77.29% | 74.35% |
+| rand_read_256B.trace | 25600 | 0/30 | 2233 | 2068 | 36.69 | 39.61 | 71.65% | 77.37% |
 | rand_read_512B.trace | 51200 | 0/29 | 3648 | 3640 | 44.91 | 45.01 | 87.72% | 87.91% |
 | rand_write_128B.trace | 12800 | 0/31 | 1653 | 1653 | 24.78 | 24.78 | 48.40% | 48.40% |
-| rand_write_256B.trace | 25600 | 0/32 | 1980 | 2025 | 41.37 | 40.45 | 80.81% | 79.01% |
+| rand_write_256B.trace | 25600 | 0/32 | 1980 | 1968 | 41.37 | 41.63 | 80.81% | 81.30% |
 | rand_write_512B.trace | 51200 | 0/29 | 3600 | 3548 | 45.51 | 46.18 | 88.89% | 90.19% |
 | sample.trace | 320 | 3/1 | 190 | 190 | 5.39 | 5.39 | 21.05% | 21.05% |
 | seq_read_128B.trace | 12800 | 96/4 | 952 | 952 | 43.03 | 43.03 | 84.03% | 84.03% |
@@ -24,7 +24,7 @@ This report compares the original sequential `main.py` against the new paralleli
 - **正確性 (Correctness)**：總位元組數 (Total Bytes) 與 Page 命中/未命中 (Hits/Misses) 在兩種執行方式下完全相同，證實位址映射與請求處理邏輯維持一致。
 - **效能差異 (Performance Difference)**：
   - 在大部分序列存取 (seq) 中，兩者的週期數幾乎完全相同。這是因為在單純的循序存取下，幾乎沒有因為 Channel 之間的指令互相干擾而造成的阻塞。
-  - 在隨機存取 (rand) 中，`asys_parall.py` 與 `main.py` 會出現些微的週期差異（例如 `rand_read_256B.trace` asys 稍慢，但 `rand_read_512B.trace` asys 稍快）。這是因為：
-    1. `main.py` 是將所有 Channel 的請求放入一個共享的 Queue (QD=64)，而 `asys_parall.py` 是各 Channel 擁有獨立的 Queue (QD=64)。這會改變指令在 Queue 中排隊的順序與可視範圍，進而影響了排程器的決策與記憶體狀態的交錯執行。
-    2. 當 Trace 中的指令集中在某個 Channel 時，`main.py` 可能會被塞滿單一 Channel 的指令，導致另一個 Channel 的指令進不去；而 `asys_parall.py` 完全解除了這種互相阻塞。相反地，拆分 Queue 也可能導致某些原先在 Global Queue 裡能利用總線空隙穿插的排程被改變。
-  - 總結來說，`asys_parall.py` 提供了一個各通道完全非同步且更貼近實體硬體獨立 Channel 行為的模擬模式，這點微小的差距是合理且符合預期的。
+  - 在隨機存取 (rand) 中，`asyc_parall.py` 與 `main.py` 會出現些微的週期差異（例如某些 trace 中 asyc 稍慢或稍快）。這是因為：
+    1. `main.py` 是將所有 Channel 的請求放入一個共享的 Queue (QD=64)，而 `asyc_parall.py` 是各 Channel 擁有獨立的 Queue (QD=64)。這會改變指令在 Queue 中排隊的順序與可視範圍，進而影響了排程器的決策與記憶體狀態的交錯執行。
+    2. 當 Trace 中的指令集中在某個 Channel 時，`main.py` 可能會被塞滿單一 Channel 的指令，導致另一個 Channel 的指令進不去；而 `asyc_parall.py` 完全解除了這種互相阻塞。相反地，拆分 Queue 也可能導致某些原先在 Global Queue 裡能利用總線空隙穿插的排程被改變。
+  - 總結來說，`asyc_parall.py` 提供了一個各通道完全非同步且更貼近實體硬體獨立 Channel 行為的模擬模式，這點微小的差距是合理且符合預期的。
