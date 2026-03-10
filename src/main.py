@@ -96,6 +96,7 @@ def main():
     interval_cycles = None
     next_interval_cycle = None
     last_bus_busy_cycles = 0
+    last_completed_reqs = 0
     interval_count = 1
 
     if args.interval_us is not None:
@@ -114,7 +115,7 @@ def main():
         interval_log_file = open(log_filename, 'w')
         print(f"Interval Logging Enabled: {args.interval_us} us (approx {int(interval_cycles)} cycles)")
         interval_log_file.write(f"Interval Logging Enabled: {args.interval_us} us\n")
-        interval_log_file.write(f"Interval (us), Utilization (%)\n")
+        interval_log_file.write(f"Interval (us), Utilization (%), Completed AXI Reqs, Idle Cycles\n")
 
     # Simulation Loop
     # 模擬迴圈
@@ -140,8 +141,12 @@ def main():
             current_bus_busy_cycles = controller.stats['bus_busy_cycles']
             interval_busy = current_bus_busy_cycles - last_bus_busy_cycles
 
+            current_completed_reqs = controller.completed_requests
+            interval_reqs = current_completed_reqs - last_completed_reqs
+
             # Available cycles across all channels in this interval
             interval_total_available = interval_cycles * num_channels
+            interval_idle_cycles = interval_total_available - interval_busy
 
             interval_utilization = (interval_busy / interval_total_available) * 100 if interval_total_available > 0 else 0
 
@@ -150,11 +155,12 @@ def main():
             # 強制轉換為整數並加入千分位逗號，避免科學記號
             formatted_time = f"{int(interval_time_us):,}"
 
-            msg = f"Interval {formatted_time} us: Utilization = {interval_utilization:.2f} %"
+            msg = f"Interval {formatted_time} us: Utilization = {interval_utilization:.2f} % | Reqs: {interval_reqs} | Idle: {int(interval_idle_cycles)}"
             print(msg)
-            interval_log_file.write(f"{formatted_time}, {interval_utilization:.2f}\n")
+            interval_log_file.write(f"{formatted_time}, {interval_utilization:.2f}, {interval_reqs}, {int(interval_idle_cycles)}\n")
 
             last_bus_busy_cycles = current_bus_busy_cycles
+            last_completed_reqs = current_completed_reqs
             interval_count += 1
             next_interval_cycle += interval_cycles
 
