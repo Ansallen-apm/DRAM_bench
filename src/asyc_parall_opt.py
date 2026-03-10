@@ -42,7 +42,7 @@ class DRAMControllerOpt(DRAMController):
 
         return done
 
-    def tick(self):
+    def tick(self, pool_manager=None):
         """
         Overridden tick to utilize cached command readiness.
         """
@@ -128,7 +128,9 @@ class DRAMControllerOpt(DRAMController):
                     selected_indices.append(selected_idx)
 
         for idx in sorted(selected_indices, reverse=True):
-            self.queue.pop(idx)
+            completed_req = self.queue.pop(idx)
+            if pool_manager:
+                pool_manager.recycle(completed_req)
             self.completed_requests += 1
 
         self.current_time += 1
@@ -138,9 +140,10 @@ class TraceReader:
     Reads and parses trace files.
     讀取並解析 Trace 檔案。
     """
-    def __init__(self, filepath):
+    def __init__(self, filepath, pool=None):
         self.filepath = filepath
         self.file = open(filepath, 'r')
+        self.pool = pool
 
     def __iter__(self):
         return self
@@ -174,13 +177,38 @@ class TraceReader:
         size = bytes_per_beat * beats
 
         # We pass 'size' to controller. 'burst_count' is no longer direct input for DRAM duration.
+        if self.pool is not None and len(self.pool['free']) > 0:
+            req = self.pool['free'].pop()
+            req.clear() # clear previous states
+            req['is_write'] = is_write
+            req['address'] = address
+            req['size'] = size
+            req['beats'] = beats
+            return req
+        else:
+            return {
+                'is_write': is_write,
+                'address': address,
+                'size': size,
+                'beats': beats # Optional, for debug
+            }
 
-        return {
-            'is_write': is_write,
-            'address': address,
-            'size': size,
-            'beats': beats # Optional, for debug
+class RequestPoolManager:
+    """
+    Manages a pool of request dictionaries to prevent GC overhead.
+    """
+    def __init__(self, max_size):
+        self.pool = {
+            'free': [{} for _ in range(max_size)],
+            'max_size': max_size
         }
+
+    def get_pool(self):
+        return self.pool
+
+    def recycle(self, req):
+        if len(self.pool['free']) < self.pool['max_size']:
+            self.pool['free'].append(req)
 
 import os
 
@@ -192,7 +220,9 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
     mapper = AddressMapper(mapping)
     controller = DRAMControllerOpt(config, mapper, scheduler_type=policy, queue_depth=queue_depth)
 
-    trace_reader = TraceReader(trace_filepath)
+    # Initialize Object Pool to avoid Python GC lag on huge traces
+    pool_manager = RequestPoolManager(queue_depth * 2)
+    trace_reader = TraceReader(trace_filepath, pool=pool_manager.get_pool())
     trace_iter = iter(trace_reader)
 
     interval_log_file = None
@@ -200,6 +230,7 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
     next_interval_cycle = None
     last_bus_busy_cycles = 0
     last_completed_reqs = 0
+    last_total_bytes = 0
     interval_count = 1
 
     if interval_us is not None:
@@ -219,7 +250,7 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
         if verbose_interval:
             print(f"[CH{channel_id}] Interval Logging Enabled: {interval_us} us (approx {int(interval_cycles)} cycles)")
         interval_log_file.write(f"Interval Logging Enabled: {interval_us} us\n")
-        interval_log_file.write(f"Interval (us), Utilization (%), Completed AXI Reqs, Idle Cycles\n")
+        interval_log_file.write(f"Interval (us), Utilization (%), Completed AXI Reqs, Interval Bytes, Idle Cycles\n")
 
     next_req = None
     eof_reached = False
@@ -246,7 +277,7 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
 
         # Tick even if queue might not be fully populated yet
         # (or if we hit EOF and just need to drain)
-        controller.tick()
+        controller.tick(pool_manager=pool_manager)
 
         # Interval utilization logging
         if interval_cycles is not None and controller.current_time >= next_interval_cycle:
@@ -256,22 +287,28 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
             current_completed_reqs = controller.completed_requests
             interval_reqs = current_completed_reqs - last_completed_reqs
 
+            current_total_bytes = controller.stats['total_bytes']
+            interval_bytes = current_total_bytes - last_total_bytes
+
             # Since this controller is ONLY processing ONE channel:
             interval_total_available = interval_cycles * 1
-            interval_idle_cycles = interval_total_available - interval_busy
+            interval_idle_cycles = max(0, interval_total_available - interval_busy)
 
-            interval_utilization = (interval_busy / interval_total_available) * 100 if interval_total_available > 0 else 0
+            # Clamp utilization to 100% to handle burst durations crossing the interval boundary
+            capped_busy = min(interval_busy, interval_total_available)
+            interval_utilization = (capped_busy / interval_total_available) * 100 if interval_total_available > 0 else 0
             interval_time_us = interval_us * interval_count
             # 強制轉換為整數並加入千分位逗號，避免科學記號
             formatted_time = f"{int(interval_time_us):,}"
 
             if verbose_interval:
-                msg = f"[CH{channel_id}] Interval {formatted_time} us: Utilization = {interval_utilization:.2f} % | Reqs: {interval_reqs} | Idle: {int(interval_idle_cycles)}"
+                msg = f"[CH{channel_id}] Interval {formatted_time} us: Utilization = {interval_utilization:.2f} % | Reqs: {interval_reqs} | Bytes: {interval_bytes} | Idle: {int(interval_idle_cycles)}"
                 print(msg)
-            interval_log_file.write(f"{formatted_time}, {interval_utilization:.2f}, {interval_reqs}, {int(interval_idle_cycles)}\n")
+            interval_log_file.write(f"{formatted_time}, {interval_utilization:.2f}, {interval_reqs}, {interval_bytes}, {int(interval_idle_cycles)}\n")
 
             last_bus_busy_cycles = current_bus_busy_cycles
             last_completed_reqs = current_completed_reqs
+            last_total_bytes = current_total_bytes
             interval_count += 1
             next_interval_cycle += interval_cycles
 
