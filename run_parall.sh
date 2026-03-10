@@ -20,20 +20,40 @@ QUEUE_DEPTH=64
 INTERVAL_US=0.1
 POLICY="PageHitFirst"
 SCRIPT="src/asyc_parall.py"
+LOG_DIR="LOG"
+MAX_JOBS=4
 
-# Parse arguments for the -o / --opt flag
-for arg in "$@"; do
-    if [ "$arg" == "-o" ] || [ "$arg" == "--opt" ]; then
-        SCRIPT="src/asyc_parall_opt.py"
-        echo "[INFO] Using the optimized caching simulator: $SCRIPT"
-    fi
+# Parse arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -o|--opt)
+            SCRIPT="src/asyc_parall_opt.py"
+            echo "[INFO] Using the optimized caching simulator: $SCRIPT"
+            ;;
+        -j|--jobs)
+            MAX_JOBS="$2"
+            shift # past argument
+            ;;
+        -l|--log_dir)
+            LOG_DIR="$2"
+            shift # past argument
+            ;;
+    esac
+    shift
 done
+
+mkdir -p "$LOG_DIR"
 
 echo "Starting parallel simulation batch..."
 echo "Simulator: $SCRIPT"
+echo "Max Concurrent Jobs: $MAX_JOBS"
+echo "Log Directory: $LOG_DIR"
 echo "Total Configs: ${#CONFIGS[@]}"
 echo "Total Traces: ${#TRACES[@]}"
 echo "=========================================="
+
+# Job control variables
+RUNNING_JOBS=0
 
 # Loop through all configurations and traces
 for CONFIG in "${CONFIGS[@]}"; do
@@ -48,12 +68,21 @@ for CONFIG in "${CONFIGS[@]}"; do
             --trace "$TRACE" \
             --policy "$POLICY" \
             --queue_depth "$QUEUE_DEPTH" \
-            --interval_us "$INTERVAL_US" &
+            --interval_us "$INTERVAL_US" \
+            --log_dir "$LOG_DIR" &
+
+        RUNNING_JOBS=$((RUNNING_JOBS+1))
+
+        # If we reached MAX_JOBS, wait for any one job to finish before continuing
+        if [[ $RUNNING_JOBS -ge $MAX_JOBS ]]; then
+            wait -n
+            RUNNING_JOBS=$((RUNNING_JOBS-1))
+        fi
 
     done
 done
 
-# Wait for all background jobs to finish
+# Wait for remaining background jobs to finish
 wait
 
 echo "=========================================="
