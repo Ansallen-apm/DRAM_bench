@@ -21,7 +21,7 @@ INTERVAL_US=0.1
 POLICY="PageHitFirst"
 SCRIPT="src/asyc_parall.py"
 LOG_DIR="LOG"
-MAX_JOBS=4
+MAX_JOBS=2
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
