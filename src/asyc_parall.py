@@ -61,7 +61,7 @@ class TraceReader:
 
 import os
 
-def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_depth, interval_us, verbose_interval, trace_name):
+def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_depth, interval_us, verbose_interval, trace_name, log_dir):
     """
     Simulates a single Channel independently by streaming the trace file.
     This avoids loading the entire trace into memory, preventing OOM on huge files.
@@ -85,7 +85,12 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
         interval_cycles = interval_ns / cycle_time_ns
         next_interval_cycle = interval_cycles
 
-        log_filename = f'interval_{trace_name}_CH{channel_id}.log'
+        if log_dir:
+            os.makedirs(log_dir, exist_ok=True)
+            log_filename = os.path.join(log_dir, f'interval_{trace_name}_CH{channel_id}.log')
+        else:
+            log_filename = f'interval_{trace_name}_CH{channel_id}.log'
+
         interval_log_file = open(log_filename, 'w')
         if verbose_interval:
             print(f"[CH{channel_id}] Interval Logging Enabled: {interval_us} us (approx {int(interval_cycles)} cycles)")
@@ -168,6 +173,7 @@ def main():
     parser.add_argument('--queue_depth', type=int, default=16, help='Command queue depth (指令隊列深度)')
     parser.add_argument('--interval_us', type=float, default=None, help='Interval in microseconds for calculating utilization (計算利用率的時間區間，單位為 us)')
     parser.add_argument('--verbose_interval', action='store_true', help='Print interval utilization to console with [CHx] tag (在終端機印出帶有 [CHx] 標籤的區間利用率)')
+    parser.add_argument('--log_dir', type=str, default='.', help='Directory to save the interval log files (存放 interval log 檔案的資料夾)')
 
     args = parser.parse_args()
 
@@ -212,7 +218,7 @@ def main():
     pool_args = []
     for ch_id in active_channels:
         pool_args.append((
-            ch_id, args.trace, config, mapping, args.policy, args.queue_depth, args.interval_us, args.verbose_interval, trace_base_name
+            ch_id, args.trace, config, mapping, args.policy, args.queue_depth, args.interval_us, args.verbose_interval, trace_base_name, args.log_dir
         ))
 
     # Determine optimal number of processes

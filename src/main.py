@@ -66,6 +66,7 @@ def main():
     parser.add_argument('--policy', default='PageHitFirst', choices=['FIFO', 'PageHitFirst'], help='Scheduling policy (排程策略)')
     parser.add_argument('--queue_depth', type=int, default=16, help='Command queue depth (指令隊列深度)')
     parser.add_argument('--interval_us', type=float, default=None, help='Interval in microseconds for calculating utilization (計算利用率的時間區間，單位為 us)')
+    parser.add_argument('--log_dir', type=str, default='.', help='Directory to save the interval log files (存放 interval log 檔案的資料夾)')
 
     args = parser.parse_args()
 
@@ -104,7 +105,13 @@ def main():
         interval_cycles = interval_ns / cycle_time_ns
         next_interval_cycle = interval_cycles
 
-        interval_log_file = open('interval.log', 'w')
+        if args.log_dir:
+            os.makedirs(args.log_dir, exist_ok=True)
+            log_filename = os.path.join(args.log_dir, 'interval.log')
+        else:
+            log_filename = 'interval.log'
+
+        interval_log_file = open(log_filename, 'w')
         print(f"Interval Logging Enabled: {args.interval_us} us (approx {int(interval_cycles)} cycles)")
         interval_log_file.write(f"Interval Logging Enabled: {args.interval_us} us\n")
         interval_log_file.write(f"Interval (us), Utilization (%)\n")
