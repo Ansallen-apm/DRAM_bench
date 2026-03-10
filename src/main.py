@@ -147,8 +147,8 @@ def main():
 
             interval_time_us = args.interval_us * interval_count
 
-            # 使用 :g 格式化，移除不必要的尾隨 0，但至少會呈現小數
-            formatted_time = f"{interval_time_us:.3g}"
+            # 強制轉換為整數並加入千分位逗號，避免科學記號
+            formatted_time = f"{int(interval_time_us):,}"
 
             msg = f"Interval {formatted_time} us: Utilization = {interval_utilization:.2f} %"
             print(msg)
