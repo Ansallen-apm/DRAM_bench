@@ -134,7 +134,8 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
 
             interval_utilization = (interval_busy / interval_total_available) * 100 if interval_total_available > 0 else 0
             interval_time_us = interval_us * interval_count
-            formatted_time = f"{interval_time_us:.3g}"
+            # 強制轉換為整數並加入千分位逗號，避免科學記號
+            formatted_time = f"{int(interval_time_us):,}"
 
             if verbose_interval:
                 msg = f"[CH{channel_id}] Interval {formatted_time} us: Utilization = {interval_utilization:.2f} %"
