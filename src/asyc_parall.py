@@ -61,14 +61,16 @@ class TraceReader:
 
 import os
 
-def run_channel_sim(channel_id, requests, config, mapping, policy, queue_depth, interval_us, verbose_interval, trace_name):
+def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_depth, interval_us, verbose_interval, trace_name):
     """
-    Simulates a single Channel independently.
+    Simulates a single Channel independently by streaming the trace file.
+    This avoids loading the entire trace into memory, preventing OOM on huge files.
     """
     mapper = AddressMapper(mapping)
-    # The DRAMController internally still uses channel IDs from the requests,
-    # but since we filtered it, it will only process this specific channel.
     controller = DRAMController(config, mapper, scheduler_type=policy, queue_depth=queue_depth)
+
+    trace_reader = TraceReader(trace_filepath)
+    trace_iter = iter(trace_reader)
 
     interval_log_file = None
     interval_cycles = None
@@ -90,15 +92,31 @@ def run_channel_sim(channel_id, requests, config, mapping, policy, queue_depth, 
         interval_log_file.write(f"Interval Logging Enabled: {interval_us} us\n")
         interval_log_file.write(f"Interval (us), Utilization (%)\n")
 
-    req_idx = 0
-    total_reqs = len(requests)
+    next_req = None
+    eof_reached = False
 
-    while req_idx < total_reqs or len(controller.queue) > 0:
-        # Fill Queue
-        while req_idx < total_reqs and len(controller.queue) < queue_depth:
-            controller.queue.append(requests[req_idx])
-            req_idx += 1
+    while not eof_reached or len(controller.queue) > 0:
+        # Fill Queue up to depth
+        while not eof_reached and len(controller.queue) < queue_depth:
+            if next_req is None:
+                next_req = next(trace_iter, None)
+                if next_req is None:
+                    eof_reached = True
+                    break
 
+            # Process map address to see if it belongs to this worker's channel
+            mapped = mapper.map_address(next_req['address'])
+            req_ch = mapped.get('Channel', 0)
+
+            if req_ch == channel_id:
+                next_req['mapped'] = mapped
+                controller.queue.append(next_req)
+                next_req = None # Consume it
+            else:
+                next_req = None # Discard it, belongs to another channel
+
+        # Tick even if queue might not be fully populated yet
+        # (or if we hit EOF and just need to drain)
         controller.tick()
 
         # Interval utilization logging
@@ -167,39 +185,38 @@ def main():
     mapper = AddressMapper(mapping)
     controller = DRAMController(config, mapper, scheduler_type=args.policy, queue_depth=args.queue_depth)
 
-    # Trace Reader and Pre-processing for Channels
-    # 讀取 Trace 並根據 Channel 分類 Requests
-    trace_reader = TraceReader(args.trace)
-
-    channel_requests = {}
+    # Fast Pre-scan to discover active channels in the trace
+    # 快速掃描找出 Trace 到底用到了哪些 Channel，避免啟動不需要的 Worker
+    active_channels = set()
     mapper = AddressMapper(mapping)
 
-    for req in trace_reader:
-        # We need to map the address here to determine the channel
-        mapped = mapper.map_address(req['address'])
-        req['mapped'] = mapped
-        channel_id = mapped.get('Channel', 0)
-
-        if channel_id not in channel_requests:
-            channel_requests[channel_id] = []
-        channel_requests[channel_id].append(req)
+    with open(args.trace, 'r') as f:
+        for line in f:
+            parts = line.strip().split()
+            if not parts:
+                continue
+            addr_str = parts[1]
+            address = int(addr_str, 16)
+            mapped = mapper.map_address(address)
+            active_channels.add(mapped.get('Channel', 0))
+            # Optional: early exit if we found maximum possible channels
+            # (e.g. if we know it's a 4CH mapping, break when len == 4)
 
     print(f"Starting parallel simulation with {args.config} and {args.mapping}")
     print(f"Policy: {args.policy}, Queue Depth: {args.queue_depth}")
-    print(f"Detected {len(channel_requests)} active channel(s) in trace.")
+    print(f"Detected {len(active_channels)} active channel(s) in trace: {active_channels}")
 
-    # Multiprocessing Pool
-    # 使用多進程池平行處理各個 Channel
+    # Multiprocessing Pool Setup
     trace_base_name = os.path.splitext(os.path.basename(args.trace))[0]
 
     pool_args = []
-    for ch_id, reqs in channel_requests.items():
+    for ch_id in active_channels:
         pool_args.append((
-            ch_id, reqs, config, mapping, args.policy, args.queue_depth, args.interval_us, args.verbose_interval, trace_base_name
+            ch_id, args.trace, config, mapping, args.policy, args.queue_depth, args.interval_us, args.verbose_interval, trace_base_name
         ))
 
     # Determine optimal number of processes
-    num_processes = min(len(channel_requests), multiprocessing.cpu_count())
+    num_processes = min(len(active_channels), multiprocessing.cpu_count())
 
     with multiprocessing.Pool(processes=num_processes) as pool:
         results = pool.starmap(run_channel_sim, pool_args)
