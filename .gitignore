@@ -3,3 +3,4 @@ __pycache__/
 interval.log
 interval_*.log
 LOG/
+dram_pipeline_*.log

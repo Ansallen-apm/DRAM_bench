@@ -79,11 +79,17 @@ class DRAMController:
     Simulates the DRAM Memory Controller.
     模擬 DRAM 記憶體控制器。
     """
-    def __init__(self, config, mapper, scheduler_type='FIFO', queue_depth=16):
+    def __init__(self, config, mapper, scheduler_type='FIFO', queue_depth=16, log_cmd=False):
         self.config = config
         self.mapper = mapper
         self.scheduler_type = scheduler_type
         self.queue_depth = queue_depth
+        self.log_cmd = log_cmd
+        self.cmd_log_file = None
+        if self.log_cmd:
+            # Note: in parallel execution, each process might overwrite this unless parameterized.
+            # We'll handle unique file naming in asyc_parall.py
+            self.cmd_log_file = open("dram_pipeline.log", "w")
 
         self.current_time = 0
         self.queue = []
@@ -221,6 +227,8 @@ class DRAMController:
         row = req['mapped']['Row']
 
         channel_id = req['mapped'].get('Channel', 0)
+        rank_id = req['mapped'].get('Rank', 0)
+        bank_id = req['mapped'].get('Bank', 0)
 
         # Classify request status if not already done
         # 若尚未分類請求狀態，進行分類 (Hit/Miss/Conflict)
@@ -243,6 +251,8 @@ class DRAMController:
             bank.last_pre = self.current_time
             bank.is_open = False
             bank.open_row = None
+            if self.cmd_log_file:
+                self.cmd_log_file.write(f"{self.current_time}: [CH{channel_id} RK{rank_id} BK{bank_id}] PRE\n")
             return False
 
         elif cmd_type == 'ACT':
@@ -260,6 +270,9 @@ class DRAMController:
             history.append(self.current_time)
             if len(history) > 4:
                 history.pop(0)
+
+            if self.cmd_log_file:
+                self.cmd_log_file.write(f"{self.current_time}: [CH{channel_id} RK{rank_id} BK{bank_id}] ACT\n")
 
             return False
 
@@ -293,6 +306,9 @@ class DRAMController:
 
             self.data_bus_free_time[channel_id] = actual_data_start + duration
             self.last_data_dir[channel_id] = cmd_type
+
+            if self.cmd_log_file:
+                self.cmd_log_file.write(f"{self.current_time}: [CH{channel_id} RK{rank_id} BK{bank_id}] {cmd_type} (Data: {actual_data_start} to {actual_data_start + duration})\n")
 
             # Count the full burst duration as bus busy time to reflect actual hardware utilization
             # 計算完整的 Burst 週期作為匯流排忙碌時間，反映真實的硬體利用率

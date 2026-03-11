@@ -14,8 +14,13 @@ class DRAMControllerOpt(DRAMController):
     """
     Optimized version of DRAMController with command status caching.
     """
-    def __init__(self, config, mapper, scheduler_type='FIFO', queue_depth=16):
-        super().__init__(config, mapper, scheduler_type, queue_depth)
+    def __init__(self, config, mapper, scheduler_type='FIFO', queue_depth=16, log_cmd=False, channel_id=None):
+        super().__init__(config, mapper, scheduler_type, queue_depth, log_cmd)
+        if log_cmd and channel_id is not None:
+            # Overwrite the shared file to a channel specific one
+            if self.cmd_log_file:
+                self.cmd_log_file.close()
+            self.cmd_log_file = open(f"dram_pipeline_CH{channel_id}.log", "w")
 
     def invalidate_all_cache(self):
         """
@@ -212,13 +217,13 @@ class RequestPoolManager:
 
 import os
 
-def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_depth, interval_us, verbose_interval, trace_name, log_dir):
+def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_depth, interval_us, verbose_interval, trace_name, log_dir, log_cmd):
     """
     Simulates a single Channel independently by streaming the trace file.
     This avoids loading the entire trace into memory, preventing OOM on huge files.
     """
     mapper = AddressMapper(mapping)
-    controller = DRAMControllerOpt(config, mapper, scheduler_type=policy, queue_depth=queue_depth)
+    controller = DRAMControllerOpt(config, mapper, scheduler_type=policy, queue_depth=queue_depth, log_cmd=log_cmd, channel_id=channel_id)
 
     # Initialize Object Pool to avoid Python GC lag on huge traces
     pool_manager = RequestPoolManager(queue_depth * 2)
@@ -341,6 +346,7 @@ def main():
     parser.add_argument('--interval_us', type=float, default=None, help='Interval in microseconds for calculating utilization (計算利用率的時間區間，單位為 us)')
     parser.add_argument('--verbose_interval', action='store_true', help='Print interval utilization to console with [CHx] tag (在終端機印出帶有 [CHx] 標籤的區間利用率)')
     parser.add_argument('--log_dir', type=str, default='.', help='Directory to save the interval log files (存放 interval log 檔案的資料夾)')
+    parser.add_argument('--log_cmd', action='store_true', help='Enable pipeline command logging (啟用管線指令日誌)')
 
     args = parser.parse_args()
 
@@ -383,7 +389,7 @@ def main():
     pool_args = []
     for ch_id in active_channels:
         pool_args.append((
-            ch_id, args.trace, config, mapping, args.policy, args.queue_depth, args.interval_us, args.verbose_interval, trace_base_name, args.log_dir
+            ch_id, args.trace, config, mapping, args.policy, args.queue_depth, args.interval_us, args.verbose_interval, trace_base_name, args.log_dir, args.log_cmd
         ))
 
     # Determine optimal number of processes
