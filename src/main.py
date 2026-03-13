@@ -11,17 +11,24 @@ from dram_sim import DRAMController
 
 class TraceReader:
     """
-    Reads and parses trace files.
-    讀取並解析 Trace 檔案。
+    Reads and parses trace files with hardware-aligned chunking.
+    讀取並解析 Trace 檔案，並進行硬體對齊的區塊切割。
     """
-    def __init__(self, filepath):
+    def __init__(self, filepath, mapper):
         self.filepath = filepath
         self.file = open(filepath, 'r')
+        self.mapper = mapper
+        self.pending_chunks = []
 
     def __iter__(self):
         return self
 
     def __next__(self):
+        # Return pending chunks if any exist
+        # 如果有待處理的區塊，先回傳
+        if self.pending_chunks:
+            return self.pending_chunks.pop(0)
+
         line = self.file.readline()
         if not line:
             self.file.close()
@@ -41,22 +48,34 @@ class TraceReader:
         burst_len_code = int(parts[3], 16)
 
         is_write = 'W' in type_str
-        address = int(addr_str, 16)
+        start_address = int(addr_str, 16)
 
-        # Calculate Request Size
-        # 計算請求大小
+        # Calculate total Request Size
+        # 計算總請求大小
         beats = burst_len_code + 1
         bytes_per_beat = 2**bus_width_log2
-        size = bytes_per_beat * beats
+        total_size = bytes_per_beat * beats
 
-        # We pass 'size' to controller. 'burst_count' is no longer direct input for DRAM duration.
+        curr_addr = start_address
+        remaining_size = total_size
 
-        return {
-            'is_write': is_write,
-            'address': address,
-            'size': size,
-            'beats': beats # Optional, for debug
-        }
+        while remaining_size > 0:
+            next_boundary = self.mapper.get_next_boundary(curr_addr)
+            chunk_size = min(remaining_size, next_boundary - curr_addr)
+
+            # Important: Hardware alignment means that a single request must not cross boundary.
+            # 重要：硬體對齊代表單一請求不能跨越邊界。
+            self.pending_chunks.append({
+                'is_write': is_write,
+                'address': curr_addr,
+                'size': chunk_size,
+                'beats': chunk_size // bytes_per_beat
+            })
+
+            curr_addr += chunk_size
+            remaining_size -= chunk_size
+
+        return self.pending_chunks.pop(0)
 
 def main():
     parser = argparse.ArgumentParser(description='Simple DRAM Simulator')
@@ -86,7 +105,7 @@ def main():
 
     # Trace Reader
     # Trace 讀取器
-    trace_reader = TraceReader(args.trace)
+    trace_reader = TraceReader(args.trace, mapper)
     trace_iter = iter(trace_reader)
 
     print(f"Starting simulation with {args.config} and {args.mapping}")

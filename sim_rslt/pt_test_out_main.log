@@ -1,0 +1,13 @@
+Starting simulation with configs/LP4_64_cfg.json and configs/mapping_2ch.json
+Policy: PageHitFirst, Queue Depth: 128
+
+Simulation Results:
+Total Cycles (總週期): 448182
+Total Bytes (總位元組): 14336000
+Bandwidth (頻寬): 102.36 GB/s
+Utilization (利用率): 99.96 %
+Average Queue Depth (平均隊列深度): 127.59
+------------------------------
+Page Hits (Page 命中): 846
+Page Misses (Page 未命中): 488
+Page Conflicts (Page 衝突): 12666
