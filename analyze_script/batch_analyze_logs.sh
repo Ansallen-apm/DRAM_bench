@@ -19,8 +19,11 @@ for log_file in "$LOG_DIR"/interval_*.log; do
         continue
     fi
 
+    # Determine directory of this script to safely call the python companion
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
     # Use the python script to get a JSON summary
-    JSON_OUT=$(python3 analyze_interval_log.py --log "$log_file" --req_threshold "$REQ_THRESHOLD" --json)
+    JSON_OUT=$(python3 "$SCRIPT_DIR/analyze_interval_log.py" --log "$log_file" --req_threshold "$REQ_THRESHOLD" --json)
 
     # Simple JSON extraction using grep/sed (since jq might not be installed in all sandboxes)
     # E.g., "avg_util": 95.15
@@ -43,4 +46,4 @@ for log_file in "$LOG_DIR"/interval_*.log; do
 done
 
 echo "=========================================================================================="
-echo "Tip: Run 'python3 analyze_interval_log.py --log <file>' for deep dive into a specific log."
+echo "Tip: Run 'python3 analyze_script/analyze_interval_log.py --log <file>' for deep dive into a specific log."

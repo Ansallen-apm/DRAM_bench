@@ -151,3 +151,32 @@ The simulator outputs performance statistics:
   <!-- Page 狀態統計：Hits, Misses, Conflicts 次數。 -->
 - **Interval Utilization (if `--interval_us` used)**: Real-time utilization over time intervals, printed to console and saved to `interval.log`.
   <!-- 區間利用率 (若使用 `--interval_us`)：隨時間變化的即時利用率，將印出至控制台並儲存至 `interval.log`。 -->
+
+## Log Analysis Tools (日誌分析工具)
+
+The repository provides several tools in the `analyze_script/` directory to help you visualize and analyze the generated logs. We have provided some sample logs in the `example_logs/` directory for you to test.
+<!-- 專案在 `analyze_script/` 目錄下提供了多個工具，協助您視覺化與分析生成的日誌。我們在 `example_logs/` 目錄中提供了一些範例日誌供您測試。 -->
+
+### 1. Batch Analyze Interval Logs (批次分析區間日誌)
+Use `batch_analyze_logs.sh` to get a high-level summary of all interval logs within a directory. It outputs the Average, Median, Min/Max Utilization, and counts Starved intervals (where no requests were processed).
+<!-- 使用 `batch_analyze_logs.sh` 來獲得目錄內所有區間日誌的高階摘要。它會輸出平均、中位數、最小/最大利用率，並計算飢餓區間（沒有處理任何請求的區段）。 -->
+
+```bash
+./analyze_script/batch_analyze_logs.sh example_logs
+```
+
+### 2. Deep Dive Interval Log (深入分析單一區間日誌)
+Use `analyze_interval_log.py` to inspect a specific log file. It prints detailed quartiles and lists the Top N best/worst utilization periods and the most idle periods.
+<!-- 使用 `analyze_interval_log.py` 來檢查特定的日誌檔。它會印出詳細的四分位數，並列出前 N 個最佳/最差利用率區段與最多空轉週期的區段。 -->
+
+```bash
+python3 analyze_script/analyze_interval_log.py --log example_logs/interval_seq_read_64B_CH0.log --top_n 3
+```
+
+### 3. Visualize Command Pipeline (視覺化管線指令)
+If you run the simulator with the hidden `--log_cmd` flag, it generates `dram_pipeline_CHx.log`. You can visualize the exact timeline of PRE, ACT, RD, and WR commands to analyze latency hiding and bank conflicts.
+<!-- 如果您在執行模擬器時加上隱藏的 `--log_cmd` 參數，它會生成 `dram_pipeline_CHx.log`。您可以視覺化 PRE, ACT, RD, WR 指令的精確時間軸，用以分析時間隱藏 (Latency Hiding) 與 Bank 衝突。 -->
+
+```bash
+python3 analyze_script/analyze_pipeline.py --log example_logs/dram_pipeline_CH0.log
+```
