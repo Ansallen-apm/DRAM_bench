@@ -12,17 +12,22 @@ import multiprocessing
 
 class TraceReader:
     """
-    Reads and parses trace files.
-    讀取並解析 Trace 檔案。
+    Reads and parses trace files with hardware-aligned chunking.
+    讀取並解析 Trace 檔案，並進行硬體對齊的區塊切割。
     """
-    def __init__(self, filepath):
+    def __init__(self, filepath, mapper):
         self.filepath = filepath
         self.file = open(filepath, 'r')
+        self.mapper = mapper
+        self.pending_chunks = []
 
     def __iter__(self):
         return self
 
     def __next__(self):
+        if self.pending_chunks:
+            return self.pending_chunks.pop(0)
+
         line = self.file.readline()
         if not line:
             self.file.close()
@@ -69,7 +74,7 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
     mapper = AddressMapper(mapping)
     controller = DRAMController(config, mapper, scheduler_type=policy, queue_depth=queue_depth)
 
-    trace_reader = TraceReader(trace_filepath)
+    trace_reader = TraceReader(trace_filepath, mapper)
     trace_iter = iter(trace_reader)
 
     interval_log_file = None

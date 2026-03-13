@@ -1,0 +1,24 @@
+Starting parallel simulation with configs/LP4_64_cfg.json and configs/mapping_4ch.json
+Policy: PageHitFirst, Queue Depth: 128
+Detected 1 active channel(s) in trace: {0}
+
+--- Per-Channel Statistics (個別通道統計) ---
+
+[Channel 0]
+  Total Cycles: 896120
+  Total Bytes: 14336000
+  Bandwidth: 51.19 GB/s
+  Utilization: 99.99 %
+  Avg Queue Depth: 127.52
+
+=============================================
+Overall Simulation Results (整體模擬結果):
+=============================================
+Total Cycles (總週期): 896120
+Total Bytes (總位元組): 14336000
+Bandwidth (頻寬): 51.19 GB/s
+Utilization (利用率): 99.99 %
+------------------------------
+Page Hits (Page 命中): 2636
+Page Misses (Page 未命中): 758
+Page Conflicts (Page 衝突): 106

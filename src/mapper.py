@@ -49,3 +49,39 @@ class AddressMapper:
             result[key] = temp_value
 
         return result
+
+    def get_next_boundary(self, phys_addr):
+        """
+        Calculates the next physical address boundary that causes a change in
+        Channel, Rank, Bank, or Row. This is essential for splitting large AXI
+        bursts into smaller hardware-aligned transactions.
+        計算下一個會導致 Channel, Rank, Bank 或 Row 改變的實體位址邊界。
+        這對於將大型 AXI burst 切割成硬體對齊的較小傳輸非常重要。
+        """
+        # We only care about bits that determine Channel, Rank, Bank, and Row.
+        # Column bits represent addresses within the same page/bank, so they don't break hardware parallelism boundaries.
+        # 我們只關心決定 Channel, Rank, Bank 和 Row 的位元。
+        # Column 位元代表同一 page/bank 內的位址，因此不會跨越硬體平行處理的邊界。
+
+        lowest_critical_lsb = 64 # Start with an arbitrarily high bit
+
+        for key in ["Channel", "Rank", "Bank", "Row"]:
+            ranges = self.mapping.get(key, [])
+            for r in ranges:
+                # The lowest LSB among all critical fields dictates the finest interleaving granularity
+                # 所有關鍵欄位中最低的 LSB 決定了最細的交錯粒度
+                msb, lsb = r
+                if lsb < lowest_critical_lsb:
+                    lowest_critical_lsb = lsb
+
+        # If no critical fields are found (e.g. invalid config), fallback to 1KB (bit 10)
+        # 如果沒有找到關鍵欄位（如無效設定），預設為 1KB (bit 10)
+        if lowest_critical_lsb == 64:
+            lowest_critical_lsb = 10
+
+        boundary_size = 1 << lowest_critical_lsb
+
+        # Calculate next boundary by clearing lower bits and adding boundary_size
+        # 透過清除低位元並加上邊界大小來計算下一個邊界
+        next_boundary = (phys_addr & ~(boundary_size - 1)) + boundary_size
+        return next_boundary

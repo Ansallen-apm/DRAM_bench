@@ -142,18 +142,27 @@ class DRAMControllerOpt(DRAMController):
 
 class TraceReader:
     """
-    Reads and parses trace files.
-    讀取並解析 Trace 檔案。
+    Reads and parses trace files with hardware-aligned chunking.
+    讀取並解析 Trace 檔案，並進行硬體對齊的區塊切割。
     """
-    def __init__(self, filepath, pool=None):
+    def __init__(self, filepath, mapper, pool=None):
         self.filepath = filepath
         self.file = open(filepath, 'r')
+        self.mapper = mapper
         self.pool = pool
+        self.pending_chunks = []
 
     def __iter__(self):
         return self
 
     def __next__(self):
+        if self.pending_chunks:
+            chunk = self.pending_chunks.pop(0)
+            if self.pool:
+                return self.pool.get(chunk['is_write'], chunk['address'], chunk['size'])
+            else:
+                return chunk
+
         line = self.file.readline()
         if not line:
             self.file.close()
@@ -227,7 +236,7 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
 
     # Initialize Object Pool to avoid Python GC lag on huge traces
     pool_manager = RequestPoolManager(queue_depth * 2)
-    trace_reader = TraceReader(trace_filepath, pool=pool_manager.get_pool())
+    trace_reader = TraceReader(trace_filepath, mapper, pool=pool_manager.get_pool())
     trace_iter = iter(trace_reader)
 
     interval_log_file = None
