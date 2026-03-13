@@ -4,3 +4,5 @@ interval.log
 interval_*.log
 LOG/
 dram_pipeline_*.log
+!example_logs/interval_*.log
+!example_logs/dram_pipeline_*.log
