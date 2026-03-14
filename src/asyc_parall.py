@@ -47,22 +47,40 @@ class TraceReader:
         burst_len_code = int(parts[3], 16)
 
         is_write = 'W' in type_str
-        address = int(addr_str, 16)
+        start_address = int(addr_str, 16)
 
-        # Calculate Request Size
-        # 計算請求大小
+        # Calculate total Request Size
+        # 計算總請求大小
         beats = burst_len_code + 1
         bytes_per_beat = 2**bus_width_log2
-        size = bytes_per_beat * beats
+        total_size = bytes_per_beat * beats
 
-        # We pass 'size' to controller. 'burst_count' is no longer direct input for DRAM duration.
+        curr_addr = start_address
+        remaining_size = total_size
 
-        return {
-            'is_write': is_write,
-            'address': address,
-            'size': size,
-            'beats': beats # Optional, for debug
-        }
+        # Max chunk size logic: Limit to 2 DRAM Burst Lengths (2BL).
+        # LPDDR4/5 Burst Length = 16. So 2 BL = 32 transfers.
+        # A single 16-beat BL on a 64-bit (8-Byte) bus is 16 * 8 = 128 Bytes.
+        # 2 BL = 2 * 128 = 256 Bytes.
+        # 最大區塊大小邏輯：限制為 2 個 DRAM Burst Length (2BL)。
+        # 單一 64-bit 匯流排的 16-beat BL 為 128 Bytes。2 BL = 256 Bytes。
+        max_chunk_size = 256
+
+        while remaining_size > 0:
+            next_boundary = self.mapper.get_next_boundary(curr_addr)
+            chunk_size = min(remaining_size, next_boundary - curr_addr, max_chunk_size)
+
+            self.pending_chunks.append({
+                'is_write': is_write,
+                'address': curr_addr,
+                'size': chunk_size,
+                'beats': chunk_size // bytes_per_beat
+            })
+
+            curr_addr += chunk_size
+            remaining_size -= chunk_size
+
+        return self.pending_chunks.pop(0)
 
 import os
 
@@ -118,7 +136,7 @@ def run_channel_sim(channel_id, trace_filepath, config, mapping, policy, queue_d
 
             # Process map address to see if it belongs to this worker's channel
             mapped = mapper.map_address(next_req['address'])
-            req_ch = mapped.get('Channel', 0)
+            req_ch = mapped['Channel']
 
             if req_ch == channel_id:
                 next_req['mapped'] = mapped
@@ -222,8 +240,23 @@ def main():
                 continue
             addr_str = parts[1]
             address = int(addr_str, 16)
-            mapped = mapper.map_address(address)
-            active_channels.add(mapped.get('Channel', 0))
+
+            bus_width_log2 = int(parts[2])
+            burst_len_code = int(parts[3], 16)
+            beats = burst_len_code + 1
+            bytes_per_beat = 2**bus_width_log2
+            total_size = bytes_per_beat * beats
+
+            curr_addr = address
+            remaining_size = total_size
+            while remaining_size > 0:
+                mapped = mapper.map_address(curr_addr)
+                active_channels.add(mapped['Channel'])
+
+                next_boundary = mapper.get_next_boundary(curr_addr)
+                chunk_size = min(remaining_size, next_boundary - curr_addr)
+                curr_addr += chunk_size
+                remaining_size -= chunk_size
             # Optional: early exit if we found maximum possible channels
             # (e.g. if we know it's a 4CH mapping, break when len == 4)
 

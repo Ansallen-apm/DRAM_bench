@@ -59,9 +59,21 @@ class TraceReader:
         curr_addr = start_address
         remaining_size = total_size
 
+        # Max chunk size logic: Limit to 2 DRAM Burst Lengths (2BL).
+        # LPDDR4/5 Burst Length = 16. So 2 BL = 32 transfers.
+        # However, the `bus_width_log2` in the trace is typically 6 (64 Bytes per AXI beat, which is already an entire 2-channel 32-bit DRAM burst or a single 64-bit DRAM burst).
+        # A single 16-beat BL on a 64-bit (8-Byte) bus is 16 * 8 = 128 Bytes.
+        # 2 BL = 2 * 128 = 256 Bytes.
+        # 最大區塊大小邏輯：限制為 2 個 DRAM Burst Length (2BL)。
+        # 單一 64-bit 匯流排的 16-beat BL 為 128 Bytes。2 BL = 256 Bytes。
+        max_chunk_size = 256
+
         while remaining_size > 0:
             next_boundary = self.mapper.get_next_boundary(curr_addr)
-            chunk_size = min(remaining_size, next_boundary - curr_addr)
+
+            # Chunk size is limited by the remaining size, the next hardware boundary, and the 2BL max limit.
+            # 區塊大小受限於剩餘大小、下一個硬體邊界、以及 2BL 的最大限制。
+            chunk_size = min(remaining_size, next_boundary - curr_addr, max_chunk_size)
 
             # Important: Hardware alignment means that a single request must not cross boundary.
             # 重要：硬體對齊代表單一請求不能跨越邊界。
@@ -145,6 +157,7 @@ def main():
         # Fill Queue
         # 填充隊列
         while next_req is not None and len(controller.queue) < args.queue_depth:
+            next_req['mapped'] = mapper.map_address(next_req['address'])
             controller.queue.append(next_req)
             next_req = next(trace_iter, None)
 
