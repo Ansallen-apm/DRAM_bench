@@ -1,0 +1,31 @@
+Starting parallel simulation with configs/LP4_64_cfg.json and configs/mapping_2ch.json
+Policy: FIFO, Queue Depth: 128
+Detected 2 active channel(s) in trace: {0, 1}
+
+--- Per-Channel Statistics (個別通道統計) ---
+
+[Channel 0]
+  Total Cycles: 454507
+  Total Bytes: 7168000
+  Bandwidth: 50.47 GB/s
+  Utilization: 98.57 %
+  Avg Queue Depth: 127.75
+
+[Channel 1]
+  Total Cycles: 454507
+  Total Bytes: 7168000
+  Bandwidth: 50.47 GB/s
+  Utilization: 98.57 %
+  Avg Queue Depth: 127.75
+
+=============================================
+Overall Simulation Results (整體模擬結果):
+=============================================
+Total Cycles (總週期): 454507
+Total Bytes (總位元組): 14336000
+Bandwidth (頻寬): 100.93 GB/s
+Utilization (利用率): 98.57 %
+------------------------------
+Page Hits (Page 命中): 36436
+Page Misses (Page 未命中): 6170
+Page Conflicts (Page 衝突): 13394
