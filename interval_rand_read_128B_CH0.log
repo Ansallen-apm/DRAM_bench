@@ -1,0 +1,7 @@
+Interval Logging Enabled: 10.0 us
+Interval (us), Utilization (%), Completed AXI Reqs, Interval Bytes, Idle Cycles
+10, 99.70, 1994, 255232, 96
+20, 99.75, 1995, 255360, 80
+30, 99.85, 1997, 255616, 48
+40, 99.80, 1996, 255488, 64
+50, 99.75, 1995, 255360, 80

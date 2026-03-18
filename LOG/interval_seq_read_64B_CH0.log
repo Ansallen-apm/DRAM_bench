@@ -1,0 +1,3 @@
+Interval Logging Enabled: 0.1 us
+Interval (us), Utilization (%), Completed AXI Reqs, Interval Bytes, Idle Cycles
+0, 82.50, 33, 2112, 56
